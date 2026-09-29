@@ -11,7 +11,7 @@ import { PIZZAS, CATEGORIES, PIZZA_CATEGORY, ALL_CATEGORIES, type Category } fro
 import { SITE, telHref, formatPrice } from '../../data/site';
 import { breadcrumbSchema, itemListSchema, pizzaMenuItem } from '../../lib/schema';
 import { pizzaArt } from '../../lib/pizzaArt';
-import { foodArt } from '../../lib/foodArt';
+
 
 export function getStaticPaths() {
   return [{ params: { categorie: PIZZA_CATEGORY.slug } }, ...CATEGORIES.map((c) => ({ params: { categorie: c.slug } }))];
@@ -83,7 +83,7 @@ const SEO_TEXT: Record<string, { h: string; p: string[] }> = {
 };
 const seo = SEO_TEXT[categorie!];
 
-const heroArt = isPizza ? pizzaArt(PIZZAS.find((p) => p.slug === 'burger') ?? PIZZAS[0]) : foodArt(cat!.items[0].art, cat!.items[0].tint);
+const heroArt = isPizza ? pizzaArt(PIZZAS.find((p) => p.slug === 'burger') ?? PIZZAS[0]) : '';
 const others = ALL_CATEGORIES.filter((c) => c.slug !== categorie);
 
 const jsonLd = [

@@ -6,7 +6,6 @@ import Faq from '../components/Faq.astro';
 import { SITE, telHref } from '../data/site';
 import { PIZZAS, FEATURED, CATEGORIES, PIZZA_CATEGORY, BASES, minPrice } from '../data/menu';
 import { pizzaArt } from '../lib/pizzaArt';
-import { foodArt } from '../lib/foodArt';
 import { formatPrice } from '../data/site';
 import { faqSchema } from '../lib/schema';
 import { FAQS } from '../data/faq';
@@ -23,7 +22,7 @@ const categoryTiles = [
     name: c.name,
     count: c.items.length,
     from: Math.min(...c.items.map((i) => i.price)),
-    art: foodArt(c.items[0].art, c.items[0].tint),
+    art: '',
   })),
 ];
 

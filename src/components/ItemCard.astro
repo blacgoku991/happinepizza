@@ -1,7 +1,8 @@
 ---
 import { TAGS, type Item } from '../data/menu';
 import { formatPrice } from '../data/site';
-import { foodArt } from '../lib/foodArt';
+import Photo from './Photo.astro';
+import { photo } from '../lib/photos';
 import Icon from './Icon.astro';
 
 interface Props {
@@ -14,8 +15,8 @@ const H = headingLevel;
 ---
 
 <article class="icard" data-filter-item data-tags={(item.tags ?? []).join(' ')} data-search={`${item.name} ${item.description ?? ''}`.toLowerCase()}>
-  <div class="icard__art" style={item.tint ? `--tint:${item.tint}` : undefined}>
-    <Fragment set:html={foodArt(item.art, item.tint, '')} />
+  <div class="icard__art">
+    <Photo src={photo(item.photo)} alt={item.name} sizes="124px" widths={[160, 250, 320]} class="icard__img" />
   </div>
   <div class="icard__body">
     {
@@ -72,11 +73,13 @@ const H = headingLevel;
     place-items: center;
     overflow: hidden;
   }
-  .icard__art :global(.food-art) {
-    width: 92%;
+  .icard__art :global(.icard__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform 0.8s var(--ease-spring);
   }
-  .icard:hover .icard__art :global(.food-art) {
+  .icard:hover .icard__art :global(.icard__img) {
     transform: scale(1.08) rotate(-6deg);
   }
   .icard__body {

@@ -43,6 +43,8 @@ export interface Pizza {
   tags?: Tag[];
   /** Phrase d'accroche (SEO + fiche produit). */
   pitch: string;
+  /** Clé de la photo (par défaut : pizza-<slug>). */
+  photo?: string;
 }
 
 export const PIZZAS: Pizza[] = [
@@ -180,35 +182,13 @@ export const PIZZAS: Pizza[] = [
 
 /* ---------- Autres produits ---------- */
 
-export type ArtKind =
-  | 'pasta-red'
-  | 'pasta-white'
-  | 'pasta-salmon'
-  | 'salad'
-  | 'panini'
-  | 'panini-sweet'
-  | 'donut'
-  | 'cookie'
-  | 'brownie'
-  | 'icecream'
-  | 'tiramisu'
-  | 'muffin'
-  | 'lava'
-  | 'beignet'
-  | 'can'
-  | 'bottle'
-  | 'water'
-  | 'pouch'
-  | 'menu';
-
 export interface Item {
   slug: string;
   name: string;
   description?: string;
   price: number;
-  art: ArtKind;
-  /** Couleur principale de l'illustration (boissons notamment). */
-  tint?: string;
+  /** Clé de la photo dans src/assets/photos (sans extension). */
+  photo?: string;
   tags?: Tag[];
 }
 
@@ -224,11 +204,11 @@ export interface Category {
 }
 
 export const MENUS: Item[] = [
-  { slug: 'menu-familiale', name: 'Menu Familiale', description: '1 pizza Junior + 1 cookie + 1 Coca 33 cl', price: 11.9, art: 'menu', tint: '#ffb42e' },
-  { slug: 'menu-ambiance', name: 'Menu Ambiance', description: '2 pizzas Senior au choix + 1 Maxi Coca', price: 27.9, art: 'menu', tint: '#ff4d1f', tags: ['best'] },
-  { slug: 'menu-duo', name: 'Menu Duo', description: '2 pizzas Méga au choix + 1 Maxi Coca', price: 37.9, art: 'menu', tint: '#2fa866' },
-  { slug: 'menu-enfant-pizza', name: 'Menu Enfant Pizza', description: '1 pizza jambon au choix + 1 jus de fruits + 1 compote', price: 6.9, art: 'menu', tint: '#f59e0b' },
-  { slug: 'menu-enfant-nuggets', name: 'Menu Enfant Nuggets', description: '6 nuggets + potatoes + 1 jus de fruits + 1 compote', price: 6.9, art: 'menu', tint: '#e5370c' },
+  { slug: 'menu-familiale', name: 'Menu Familiale', description: '1 pizza Junior + 1 cookie + 1 Coca 33 cl', price: 11.9, photo: 'menu-familiale' },
+  { slug: 'menu-ambiance', name: 'Menu Ambiance', description: '2 pizzas Senior au choix + 1 Maxi Coca', price: 27.9, photo: 'menu-ambiance', tags: ['best'] },
+  { slug: 'menu-duo', name: 'Menu Duo', description: '2 pizzas Méga au choix + 1 Maxi Coca', price: 37.9, photo: 'menu-duo' },
+  { slug: 'menu-enfant-pizza', name: 'Menu Enfant Pizza', description: '1 pizza jambon au choix + 1 jus de fruits + 1 compote', price: 6.9, photo: 'menu-enfant-pizza' },
+  { slug: 'menu-enfant-nuggets', name: 'Menu Enfant Nuggets', description: '6 nuggets + potatoes + 1 jus de fruits + 1 compote', price: 6.9 },
 ];
 
 export const CATEGORIES: Category[] = [
@@ -253,9 +233,9 @@ export const CATEGORIES: Category[] = [
       'Spaghetti bolognaise, pennes fromagère, tagliatelles au saumon : les pâtes Happiness Pizza livrées à Fontenay-Trésigny et alentours.',
     emoji: '🍝',
     items: [
-      { slug: 'spaghetti-bolognaise', name: 'Spaghetti Bolognaise', description: 'Sauce tomate, tomates concassées, viande hachée, ail, poivrons émincés, olives, parmesan', price: 8.5, art: 'pasta-red' },
-      { slug: 'tagliatelle-saumon', name: 'Tagliatelle Saumon', description: 'Crème, aneth, saumon fumé, parmesan', price: 9.5, art: 'pasta-salmon', tags: ['poisson'] },
-      { slug: 'pennes-fromagere', name: 'Pennes Fromagère', description: 'Sauce crème aux champignons, poulet, ail, champignons, parmesan', price: 9.9, art: 'pasta-white' },
+      { slug: 'spaghetti-bolognaise', name: 'Spaghetti Bolognaise', description: 'Sauce tomate, tomates concassées, viande hachée, ail, poivrons émincés, olives, parmesan', price: 8.5, photo: 'pates-bolognaise' },
+      { slug: 'tagliatelle-saumon', name: 'Tagliatelle Saumon', description: 'Crème, aneth, saumon fumé, parmesan', price: 9.5, photo: 'pates-saumon', tags: ['poisson'] },
+      { slug: 'pennes-fromagere', name: 'Pennes Fromagère', description: 'Sauce crème aux champignons, poulet, ail, champignons, parmesan', price: 9.9, photo: 'pates-fromagere' },
     ],
   },
   {
@@ -268,9 +248,9 @@ export const CATEGORIES: Category[] = [
       'Salade César, Fromagère ou Gourmande à 6,90 € : les salades fraîches Happiness Pizza, en livraison et à emporter à Fontenay-Trésigny.',
     emoji: '🥗',
     items: [
-      { slug: 'salade-cesar', name: 'Salade César', description: 'Méli-mélo de salade, tomates cerises, poulet rôti, parmesan, croûtons, sauce César', price: 6.9, art: 'salad', tint: '#f4d27a' },
-      { slug: 'salade-fromagere', name: 'Salade Fromagère', description: 'Méli-mélo de salade, tomates cerises, fromages, parmesan, croûtons, vinaigrette', price: 6.9, art: 'salad', tint: '#fff0c2', tags: ['vege'] },
-      { slug: 'salade-gourmande', name: 'Salade Gourmande', description: 'Méli-mélo de salade, tomates cerises, thon, chèvre, poivrons grillés, croûtons, olives, vinaigrette', price: 6.9, art: 'salad', tint: '#ff8a5c' },
+      { slug: 'salade-cesar', name: 'Salade César', description: 'Méli-mélo de salade, tomates cerises, poulet rôti, parmesan, croûtons, sauce César', price: 6.9 },
+      { slug: 'salade-fromagere', name: 'Salade Fromagère', description: 'Méli-mélo de salade, tomates cerises, fromages, parmesan, croûtons, vinaigrette', price: 6.9, tags: ['vege'] },
+      { slug: 'salade-gourmande', name: 'Salade Gourmande', description: 'Méli-mélo de salade, tomates cerises, thon, chèvre, poivrons grillés, croûtons, olives, vinaigrette', price: 6.9 },
     ],
   },
   {
@@ -283,12 +263,12 @@ export const CATEGORIES: Category[] = [
       'Paninis poulet, thon, jambon, chèvre, bœuf haché ou 3 fromages à 4,90 € chez Happiness Pizza, Fontenay-Trésigny. Livraison et à emporter.',
     emoji: '🥪',
     items: [
-      { slug: 'panini-poulet', name: 'Panini Poulet', description: 'Sauce tomate, mozzarella, poulet fumé', price: 4.9, art: 'panini' },
-      { slug: 'panini-thon', name: 'Panini Thon', description: 'Sauce tomate, mozzarella, thon', price: 4.9, art: 'panini', tags: ['poisson'] },
-      { slug: 'panini-jambon', name: 'Panini Jambon', description: 'Crème fraîche, mozzarella, jambon', price: 4.9, art: 'panini' },
-      { slug: 'panini-chevre', name: 'Panini Chèvre', description: 'Sauce tomate, mozzarella, chèvre', price: 4.9, art: 'panini', tags: ['vege'] },
-      { slug: 'panini-boeuf-hache', name: 'Panini Bœuf haché', description: 'Sauce tomate, mozzarella, bœuf haché', price: 4.9, art: 'panini' },
-      { slug: 'panini-3-fromages', name: 'Panini 3 Fromages', description: 'Sauce tomate, mozzarella, chèvre, gorgonzola', price: 4.9, art: 'panini', tags: ['vege'] },
+      { slug: 'panini-poulet', name: 'Panini Poulet', description: 'Sauce tomate, mozzarella, poulet fumé', price: 4.9 },
+      { slug: 'panini-thon', name: 'Panini Thon', description: 'Sauce tomate, mozzarella, thon', price: 4.9, tags: ['poisson'] },
+      { slug: 'panini-jambon', name: 'Panini Jambon', description: 'Crème fraîche, mozzarella, jambon', price: 4.9 },
+      { slug: 'panini-chevre', name: 'Panini Chèvre', description: 'Sauce tomate, mozzarella, chèvre', price: 4.9, tags: ['vege'] },
+      { slug: 'panini-boeuf-hache', name: 'Panini Bœuf haché', description: 'Sauce tomate, mozzarella, bœuf haché', price: 4.9 },
+      { slug: 'panini-3-fromages', name: 'Panini 3 Fromages', description: 'Sauce tomate, mozzarella, chèvre, gorgonzola', price: 4.9, tags: ['vege'] },
     ],
   },
   {
@@ -301,16 +281,16 @@ export const CATEGORIES: Category[] = [
       'Tiramisu maison, lava cake, brownie, cookie, donuts, muffin Nutella, panini Nutella et glaces : les desserts Happiness Pizza livrés chez vous.',
     emoji: '🍩',
     items: [
-      { slug: 'tiramisu-maison', name: 'Tiramisu Maison', description: 'Fait maison, crémeux et généreux', price: 4.5, art: 'tiramisu', tags: ['signature'] },
-      { slug: 'tiramisu', name: 'Tiramisu', price: 2.9, art: 'tiramisu' },
-      { slug: 'lava-cake', name: 'Lava Cake', description: 'Cœur coulant au chocolat', price: 2.9, art: 'lava' },
-      { slug: 'brownie', name: 'Brownie', description: 'Fondant au chocolat', price: 2.9, art: 'brownie' },
-      { slug: 'cookie', name: 'Cookie', description: 'Moelleux aux pépites de chocolat', price: 2.9, art: 'cookie' },
-      { slug: 'donuts', name: 'Donuts', price: 2.9, art: 'donut' },
-      { slug: 'beignet-trio', name: 'Beignet Trio', description: 'Trois beignets gourmands', price: 2.9, art: 'beignet' },
-      { slug: 'muffin-nutella', name: 'Muffin Nutella', price: 3.5, art: 'muffin' },
-      { slug: 'panini-nutella', name: 'Panini Nutella', description: 'Pain croustillant, cœur Nutella fondant', price: 3.5, art: 'panini-sweet' },
-      { slug: 'glace', name: 'Glace', description: 'Pot de glace', price: 6.9, art: 'icecream' },
+      { slug: 'tiramisu-maison', name: 'Tiramisu Maison', description: 'Fait maison, crémeux et généreux', price: 4.5, photo: 'dessert-tiramisu-maison', tags: ['signature'] },
+      { slug: 'tiramisu', name: 'Tiramisu', price: 2.9, photo: 'dessert-tiramisu' },
+      { slug: 'lava-cake', name: 'Lava Cake', description: 'Cœur coulant au chocolat', price: 2.9, photo: 'dessert-lava-cake' },
+      { slug: 'brownie', name: 'Brownie', description: 'Fondant au chocolat', price: 2.9, photo: 'dessert-brownie' },
+      { slug: 'cookie', name: 'Cookie', description: 'Moelleux aux pépites de chocolat', price: 2.9, photo: 'dessert-cookie' },
+      { slug: 'donuts', name: 'Donuts', price: 2.9, photo: 'dessert-donuts' },
+      { slug: 'beignet-trio', name: 'Beignet Trio', description: 'Trois beignets gourmands', price: 2.9, photo: 'dessert-beignet-trio' },
+      { slug: 'muffin-nutella', name: 'Muffin Nutella', price: 3.5, photo: 'dessert-muffin-nutella' },
+      { slug: 'panini-nutella', name: 'Panini Nutella', description: 'Pain croustillant, cœur Nutella fondant', price: 3.5, photo: 'dessert-panini-nutella' },
+      { slug: 'glace', name: 'Glace', description: 'Pot de glace', price: 6.9, photo: 'dessert-glace' },
     ],
   },
   {
@@ -323,18 +303,18 @@ export const CATEGORIES: Category[] = [
       'Coca-Cola, Coca Zéro, Fanta, 7UP Mojito, Capri-Sun, Badoit, eau : les boissons fraîches à ajouter à votre commande Happiness Pizza.',
     emoji: '🥤',
     items: [
-      { slug: 'coca-33cl', name: 'Coca-Cola 33 cl', price: 1.5, art: 'can', tint: '#e0141e' },
-      { slug: 'coca-zero-33cl', name: 'Coca-Cola Zéro 33 cl', price: 1.5, art: 'can', tint: '#1b1b1b' },
-      { slug: 'coca-cherry-33cl', name: 'Coca-Cola Cherry 33 cl', price: 1.5, art: 'can', tint: '#7a1030' },
-      { slug: 'fanta-citron-33cl', name: 'Fanta Citron 33 cl', price: 1.5, art: 'can', tint: '#f5d90a' },
-      { slug: 'fanta-exotique-33cl', name: 'Fanta Exotique 33 cl', price: 1.5, art: 'can', tint: '#ff7a1a' },
-      { slug: '7up-mojito-33cl', name: '7UP Mojito 33 cl', price: 1.5, art: 'can', tint: '#2fa866' },
-      { slug: 'capri-sun', name: 'Capri-Sun', price: 1.5, art: 'pouch', tint: '#c0c7cf' },
-      { slug: 'badoit', name: 'Badoit', price: 1.5, art: 'bottle', tint: '#2f9f8f' },
-      { slug: 'eau', name: 'Eau', price: 1, art: 'water', tint: '#7cc4ef' },
-      { slug: 'coca-1-5l', name: 'Coca-Cola 1,5 L', price: 3, art: 'bottle', tint: '#e0141e' },
-      { slug: 'coca-zero-1-5l', name: 'Coca-Cola Zéro 1,5 L', price: 3, art: 'bottle', tint: '#1b1b1b' },
-      { slug: 'fanta-1-5l', name: 'Fanta 1,5 L', price: 3, art: 'bottle', tint: '#ff7a1a' },
+      { slug: 'coca-33cl', name: 'Coca-Cola 33 cl', price: 1.5 },
+      { slug: 'coca-zero-33cl', name: 'Coca-Cola Zéro 33 cl', price: 1.5 },
+      { slug: 'coca-cherry-33cl', name: 'Coca-Cola Cherry 33 cl', price: 1.5 },
+      { slug: 'fanta-citron-33cl', name: 'Fanta Citron 33 cl', price: 1.5 },
+      { slug: 'fanta-exotique-33cl', name: 'Fanta Exotique 33 cl', price: 1.5 },
+      { slug: '7up-mojito-33cl', name: '7UP Mojito 33 cl', price: 1.5 },
+      { slug: 'capri-sun', name: 'Capri-Sun', price: 1.5 },
+      { slug: 'badoit', name: 'Badoit', price: 1.5 },
+      { slug: 'eau', name: 'Eau', price: 1 },
+      { slug: 'coca-1-5l', name: 'Coca-Cola 1,5 L', price: 3 },
+      { slug: 'coca-zero-1-5l', name: 'Coca-Cola Zéro 1,5 L', price: 3 },
+      { slug: 'fanta-1-5l', name: 'Fanta 1,5 L', price: 3 },
     ],
   },
 ];
