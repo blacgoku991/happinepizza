@@ -444,7 +444,7 @@ export function createPizzaScene(canvas: HTMLCanvasElement): PizzaScene | null {
     ['basil', -2.3, 1.5, -2.2, 1.5],
     ['tomato', 3.2, 1.2, -1.4, 1.4],
     ['pepperoni', 3.6, -0.5, 0.6, 1.3],
-    ['olive', -2.7, -0.7, -0.8, 1.6],
+    ['olive', 2.3, -1.2, 1.4, 1.5],
     ['mushroom', 1.1, 2.1, -2.8, 1.5],
     ['basil', 2.5, 2.2, -1, 1.3],
     ['onion', -1.5, 2.3, -2.6, 1.4],
