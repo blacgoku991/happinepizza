@@ -1,0 +1,79 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import { SITE, fullAddress } from '../data/site';
+import { breadcrumbSchema } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Mentions légales', path: '/mentions-legales/' },
+];
+const L = SITE.legal;
+---
+
+<Base
+  title="Mentions légales & confidentialité"
+  description={`Mentions légales et politique de confidentialité du site ${SITE.name} (${SITE.address.city}).`}
+  jsonLd={[breadcrumbSchema(crumbs)]}
+>
+  <PageHero crumbs={crumbs} title="Mentions légales" compact />
+  <section class="section--tight on-light">
+    <div class="container prose">
+      <h2>Éditeur du site</h2>
+      <p>
+        Le site {SITE.url.replace('https://', '')} est édité par <strong>{SITE.legalName}</strong>, {L.form}, immatriculée au {L.rcs} sous le numéro
+        SIREN {L.siren} (SIRET {L.siret}).<br />
+        Siège social : {fullAddress}.<br />
+        Téléphone : {SITE.phone}{SITE.email && <> · E-mail : {SITE.email}</>}.<br />
+        Directeur de la publication : {L.director}.
+      </p>
+
+      <h2>Hébergement</h2>
+      <p>
+        {L.host.name ? <>Le site est hébergé par {L.host.name}{L.host.address && <>, {L.host.address}</>}.</> : <>Les informations relatives à l'hébergeur du site sont disponibles sur simple demande auprès de l'éditeur.</>}
+      </p>
+
+      <h2>Propriété intellectuelle</h2>
+      <p>
+        L'ensemble des contenus de ce site (textes, logo, illustrations, mise en page) est la propriété de {SITE.legalName}, sauf mention
+        contraire. Toute reproduction, même partielle, sans autorisation préalable est interdite. Les marques citées (Coca-Cola, Fanta, Nutella,
+        Boursin…) appartiennent à leurs propriétaires respectifs.
+      </p>
+
+      <h2>Prix et informations</h2>
+      <p>
+        Les prix affichés sont indiqués en euros TTC, à titre indicatif, et peuvent être modifiés à tout moment. Seuls les prix communiqués lors
+        de la prise de commande font foi. Les photos et illustrations ne sont pas contractuelles.
+      </p>
+
+      <h2 id="confidentialite">Politique de confidentialité</h2>
+      <p>
+        Ce site ne comporte ni formulaire de collecte de données personnelles, ni outil de suivi publicitaire, ni cookie de mesure d'audience.
+      </p>
+      <ul>
+        <li>
+          <strong>Panier :</strong> le contenu de votre panier est enregistré uniquement dans votre navigateur (stockage local) afin de préparer
+          votre commande. Il n'est jamais transmis à nos serveurs.
+        </li>
+        <li>
+          <strong>Carte :</strong> la page Contact intègre une carte OpenStreetMap, chargée depuis les serveurs d'OpenStreetMap lorsque vous
+          consultez cette page.
+        </li>
+        <li>
+          <strong>Commandes :</strong> les informations communiquées par téléphone (nom, adresse de livraison, numéro) sont utilisées
+          uniquement pour préparer et livrer votre commande.
+        </li>
+      </ul>
+      <p>
+        Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour l'exercer, contactez-nous
+        au {SITE.phone} ou par courrier à l'adresse ci-dessus. Vous pouvez également introduire une réclamation auprès de la CNIL (www.cnil.fr).
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .section--tight {
+    padding-bottom: clamp(80px, 10vw, 140px);
+  }
+</style>

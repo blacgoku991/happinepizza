@@ -1,0 +1,134 @@
+---
+import Icon from './Icon.astro';
+/** Recherche + filtres pour une grille de cartes [data-filter-item] située dans le même [data-filter-scope]. */
+const filters = [
+  { key: 'all', label: 'Toutes' },
+  { key: 'base:tomate', label: 'Base tomate' },
+  { key: 'base:creme', label: 'Base crème' },
+  { key: 'tag:vege', label: 'Végétariennes' },
+  { key: 'tag:epicee', label: 'Épicées' },
+  { key: 'tag:best', label: 'Best-sellers' },
+];
+---
+
+<div class="pfilters" data-filters>
+  <label class="pfilters__search">
+    <Icon name="search" size={20} />
+    <span class="sr-only">Rechercher une pizza ou un ingrédient</span>
+    <input type="search" placeholder="Chèvre, poulet, jambon…" data-filter-search autocomplete="off" />
+  </label>
+  <div class="pfilters__chips" role="group" aria-label="Filtrer les pizzas">
+    {
+      filters.map((f, i) => (
+        <button type="button" class="pfilters__chip" data-filter={f.key} aria-pressed={i === 0 ? 'true' : 'false'}>
+          {f.label}
+        </button>
+      ))
+    }
+  </div>
+  <p class="pfilters__empty" data-filter-empty hidden>Aucune pizza ne correspond… mais la <a href="/pizzas/au-choix/">pizza Au choix</a> est faite pour vous !</p>
+</div>
+
+<style>
+  .pfilters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .pfilters__search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 260px;
+    max-width: 380px;
+    padding: 0 18px;
+    height: 50px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1.5px solid var(--line-light);
+    color: var(--muted-on-light);
+    transition: border-color 0.2s;
+  }
+  .pfilters__search:focus-within {
+    border-color: var(--tomato);
+  }
+  .pfilters__search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    font: inherit;
+    color: var(--text-on-light);
+  }
+  .pfilters__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pfilters__chip {
+    padding: 11px 16px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-light);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-on-light);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+  .pfilters__chip:hover {
+    border-color: var(--ink);
+  }
+  .pfilters__chip[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--cream);
+  }
+  .pfilters__empty {
+    flex-basis: 100%;
+    font-weight: 600;
+  }
+  .pfilters__empty a {
+    color: var(--tomato-2);
+    text-decoration: underline;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-filters]').forEach((box) => {
+    const scope = box.closest('[data-filter-scope]') ?? document;
+    const items = [...scope.querySelectorAll<HTMLElement>('[data-filter-item]')];
+    const search = box.querySelector<HTMLInputElement>('[data-filter-search]')!;
+    const chips = [...box.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+    const empty = box.querySelector<HTMLElement>('[data-filter-empty]')!;
+    let active = 'all';
+    const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+    const apply = () => {
+      const q = norm(search.value.trim());
+      let shown = 0;
+      for (const el of items) {
+        const [kind, val] = active.split(':');
+        const okFilter =
+          active === 'all' || (kind === 'base' && el.dataset.base === val) || (kind === 'tag' && (el.dataset.tags ?? '').split(' ').includes(val));
+        const okSearch = !q || norm(el.dataset.search ?? '').includes(q);
+        const show = okFilter && okSearch;
+        el.parentElement!.hidden = !show;
+        if (show) shown++;
+      }
+      empty.hidden = shown > 0;
+    };
+    chips.forEach((c) =>
+      c.addEventListener('click', () => {
+        active = c.dataset.filter!;
+        chips.forEach((x) => x.setAttribute('aria-pressed', String(x === c)));
+        apply();
+      }),
+    );
+    search.addEventListener('input', apply);
+  });
+</script>

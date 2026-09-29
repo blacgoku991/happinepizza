@@ -1,0 +1,148 @@
+---
+import { TAGS, type Item } from '../data/menu';
+import { formatPrice } from '../data/site';
+import { foodArt } from '../lib/foodArt';
+import Icon from './Icon.astro';
+
+interface Props {
+  item: Item;
+  category: string;
+  headingLevel?: 'h2' | 'h3';
+}
+const { item, category, headingLevel = 'h3' } = Astro.props;
+const H = headingLevel;
+---
+
+<article class="icard" data-filter-item data-tags={(item.tags ?? []).join(' ')} data-search={`${item.name} ${item.description ?? ''}`.toLowerCase()}>
+  <div class="icard__art" style={item.tint ? `--tint:${item.tint}` : undefined}>
+    <Fragment set:html={foodArt(item.art, item.tint, '')} />
+  </div>
+  <div class="icard__body">
+    {
+      item.tags && item.tags.length > 0 && (
+        <ul class="icard__tags">
+          {item.tags.map((t) => (
+            <li class={`tag tag--${TAGS[t].color}`}>{TAGS[t].label}</li>
+          ))}
+        </ul>
+      )
+    }
+    <H class="icard__name">{item.name}</H>
+    {item.description && <p class="icard__desc">{item.description}</p>}
+    <div class="icard__foot">
+      <span class="icard__price price">{formatPrice(item.price)}</span>
+      <button
+        type="button"
+        class="icard__add"
+        data-add
+        data-id={`${category}:${item.slug}`}
+        data-name={item.name}
+        data-price={item.price}
+        data-offer="0"
+        aria-label={`Ajouter ${item.name} au panier`}
+      >
+        <Icon name="plus" size={18} /> <span>Ajouter</span>
+      </button>
+    </div>
+  </div>
+</article>
+
+<style>
+  .icard {
+    display: grid;
+    grid-template-columns: 124px 1fr;
+    gap: 18px;
+    align-items: center;
+    padding: 16px;
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--text-on-light);
+    box-shadow: 0 24px 50px -36px rgba(60, 20, 0, 0.4);
+    transition: transform 0.5s var(--ease-out);
+  }
+  .icard:hover {
+    transform: translateY(-4px);
+  }
+  .icard__art {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 20px;
+    background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--tint, var(--saffron)) 22%, #fff7ec), var(--cream));
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .icard__art :global(.food-art) {
+    width: 92%;
+    transition: transform 0.8s var(--ease-spring);
+  }
+  .icard:hover .icard__art :global(.food-art) {
+    transform: scale(1.08) rotate(-6deg);
+  }
+  .icard__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .icard__tags {
+    display: flex;
+    gap: 6px;
+  }
+  .icard__name {
+    font-size: 1.3rem;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+  .icard__desc {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--muted-on-light);
+  }
+  .icard__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .icard__price {
+    font-size: 1.25rem;
+  }
+  .icard__add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px 9px 10px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--cream);
+    font-weight: 700;
+    font-size: 0.88rem;
+    transition:
+      background-color 0.25s,
+      transform 0.3s var(--ease-spring);
+  }
+  .icard__add:hover {
+    background: var(--tomato);
+  }
+  .icard__add:active {
+    transform: scale(0.95);
+  }
+  .icard__add:global(.is-added) {
+    background: var(--basil);
+  }
+  @media (max-width: 420px) {
+    .icard {
+      grid-template-columns: 96px 1fr;
+      gap: 14px;
+      padding: 12px;
+    }
+    .icard__add span {
+      display: none;
+    }
+    .icard__add {
+      padding: 10px;
+    }
+  }
+</style>

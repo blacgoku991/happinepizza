@@ -1,0 +1,129 @@
+---
+/**
+ * Logo Happiness Pizza — "la part qui sourit".
+ * Le symbole est en SVG, le nom en texte HTML (net, accessible et indexable).
+ */
+interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  mono?: boolean;
+  class?: string;
+}
+const { size = 'md', mono = false, class: className = '' } = Astro.props;
+---
+
+<span class:list={['logo', `logo--${size}`, { 'logo--mono': mono }, className]}>
+  <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+    <!-- part de pizza -->
+    <path
+      class="logo__slice"
+      d="M9.5 19.5c14.8-5.6 30.2-5.6 45 0L35.2 56.6c-1.4 2.6-5 2.6-6.4 0L9.5 19.5Z"
+    ></path>
+    <!-- coulure de fromage -->
+    <path class="logo__drip" d="M40.6 44.6c1.6 3.4 1.2 6.7-.6 7.4-1.8.7-3-1.4-2.4-4.3" fill="none"></path>
+    <!-- croûte -->
+    <path class="logo__crust" d="M6.5 17.8c16.4-7.1 34.6-7.1 51 0" fill="none"></path>
+    <!-- yeux pepperoni -->
+    <circle class="logo__eye" cx="24.2" cy="27.6" r="3.9"></circle>
+    <circle class="logo__eye" cx="39.8" cy="27.6" r="3.9"></circle>
+    <circle class="logo__shine" cx="23" cy="26.4" r="1.1"></circle>
+    <circle class="logo__shine" cx="38.6" cy="26.4" r="1.1"></circle>
+    <!-- sourire -->
+    <path class="logo__smile" d="M24.5 36.2c4.6 4.6 10.4 4.6 15 0" fill="none"></path>
+  </svg>
+  <span class="logo__text">
+    <span class="logo__name">happiness</span>
+    <span class="logo__sub">pizza</span>
+  </span>
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+    color: var(--cream);
+  }
+  .logo__mark {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    overflow: visible;
+    transition: transform 0.6s var(--ease-spring);
+  }
+  a:hover .logo__mark,
+  .logo:hover .logo__mark {
+    transform: rotate(-10deg) scale(1.06);
+  }
+  .logo__slice {
+    fill: var(--saffron);
+  }
+  .logo__drip {
+    stroke: var(--saffron);
+    stroke-width: 3.4;
+    stroke-linecap: round;
+  }
+  .logo__crust {
+    stroke: var(--tomato);
+    stroke-width: 7.5;
+    stroke-linecap: round;
+  }
+  .logo__eye {
+    fill: var(--tomato);
+  }
+  .logo__shine {
+    fill: #fff3dc;
+    opacity: 0.85;
+  }
+  .logo__smile {
+    stroke: var(--ink);
+    stroke-width: 3.4;
+    stroke-linecap: round;
+  }
+  .logo__text {
+    display: grid;
+    gap: 2px;
+  }
+  .logo__name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.55rem;
+    letter-spacing: -0.055em;
+    font-variation-settings: 'wdth' 88;
+  }
+  .logo__sub {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.66rem;
+    letter-spacing: 0.52em;
+    text-transform: uppercase;
+    color: var(--tomato);
+    padding-left: 2px;
+  }
+  .logo--sm .logo__mark {
+    width: 36px;
+    height: 36px;
+  }
+  .logo--sm .logo__name {
+    font-size: 1.3rem;
+  }
+  .logo--sm .logo__sub {
+    font-size: 0.58rem;
+  }
+  .logo--lg .logo__mark {
+    width: 72px;
+    height: 72px;
+  }
+  .logo--lg .logo__name {
+    font-size: 2.6rem;
+  }
+  .logo--lg .logo__sub {
+    font-size: 0.95rem;
+  }
+  .logo--mono {
+    color: var(--ink);
+  }
+  .logo--mono .logo__smile {
+    stroke: var(--ink);
+  }
+</style>

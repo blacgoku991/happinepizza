@@ -1,0 +1,112 @@
+---
+import { ALL_CATEGORIES } from '../data/menu';
+interface Props {
+  /** 'anchor' = liens vers les sections de /carte/, 'page' = liens vers les pages catégories */
+  mode?: 'anchor' | 'page';
+  current?: string;
+}
+const { mode = 'page', current } = Astro.props;
+---
+
+<nav class="catnav" aria-label="Catégories de la carte" data-catnav={mode}>
+  <div class="container">
+    <ul class="catnav__list" data-lenis-prevent>
+      {
+        mode === 'page' && (
+          <li>
+            <a href="/carte/" class:list={['catnav__link', { 'is-active': !current }]} aria-current={!current ? 'page' : undefined}>
+              Toute la carte
+            </a>
+          </li>
+        )
+      }
+      {
+        ALL_CATEGORIES.map((c) => (
+          <li>
+            <a
+              href={mode === 'anchor' ? `#${c.slug}` : `/carte/${c.slug}/`}
+              class:list={['catnav__link', { 'is-active': current === c.slug }]}
+              aria-current={current === c.slug ? 'page' : undefined}
+              data-spy={mode === 'anchor' ? c.slug : undefined}
+            >
+              <span aria-hidden="true">{c.emoji}</span> {c.name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .catnav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding-block: 12px;
+    background: rgba(255, 246, 234, 0.95);
+    backdrop-filter: blur(16px) saturate(1.3);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    border-bottom: 1px solid var(--line-light);
+    color: var(--text-on-light);
+    transition: top 0.5s var(--ease-out);
+  }
+  :global(.site-header:not(.is-hidden)) ~ main .catnav {
+    top: var(--header-h);
+  }
+  .catnav__list {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px;
+  }
+  .catnav__list::-webkit-scrollbar {
+    display: none;
+  }
+  .catnav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    transition:
+      background-color 0.25s,
+      color 0.25s;
+  }
+  .catnav__link:hover {
+    background: rgba(27, 19, 16, 0.07);
+  }
+  .catnav__link.is-active {
+    background: var(--ink);
+    color: var(--cream);
+  }
+</style>
+
+<script>
+  // Surligne la catégorie visible (mode ancre)
+  document.querySelectorAll<HTMLElement>('[data-catnav="anchor"]').forEach((nav) => {
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>('[data-spy]')];
+    const sections = links.map((l) => document.getElementById(l.dataset.spy!)).filter(Boolean) as HTMLElement[];
+    const list = nav.querySelector<HTMLElement>('.catnav__list')!;
+    const setActive = (id: string) => {
+      links.forEach((l) => {
+        const on = l.dataset.spy === id;
+        l.classList.toggle('is-active', on);
+        if (on) list.scrollTo({ left: l.offsetLeft - list.clientWidth / 2 + l.clientWidth / 2, behavior: 'smooth' });
+      });
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-35% 0px -55% 0px' },
+    );
+    sections.forEach((s) => io.observe(s));
+  });
+</script>

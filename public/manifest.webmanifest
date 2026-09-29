@@ -1,0 +1,16 @@
+{
+  "name": "Happiness Pizza — Fontenay-Trésigny",
+  "short_name": "Happiness Pizza",
+  "description": "Pizzeria artisanale à Fontenay-Trésigny : livraison, à emporter et sur place.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#120c0a",
+  "theme_color": "#120c0a",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

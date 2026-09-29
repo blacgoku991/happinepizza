@@ -1,0 +1,1371 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Hours from '../components/Hours.astro';
+import Faq from '../components/Faq.astro';
+import { SITE, telHref } from '../data/site';
+import { PIZZAS, FEATURED, CATEGORIES, PIZZA_CATEGORY, BASES, minPrice } from '../data/menu';
+import { pizzaArt } from '../lib/pizzaArt';
+import { foodArt } from '../lib/foodArt';
+import { formatPrice } from '../data/site';
+import { faqSchema } from '../lib/schema';
+import { FAQS } from '../data/faq';
+
+const title = `Pizzeria à ${SITE.address.city} – Livraison | ${SITE.name}`;
+const description = `Pizzeria artisanale à ${SITE.address.city} : pizzas à pâte fraîche, pâtes, salades, desserts. Livraison gratuite ${SITE.delivery.radiusKm} km, à emporter, sur place. ☎ ${SITE.phone}`;
+
+const heroPizza = pizzaArt({ slug: 'hero-fallback', base: 'tomate', ingredients: ['Olives', 'Champignons', 'Tomates cerises', 'Poivrons', 'Merguez'] });
+
+const categoryTiles = [
+  { slug: PIZZA_CATEGORY.slug, name: PIZZA_CATEGORY.name, count: PIZZAS.length, from: Math.min(...PIZZAS.map(minPrice)), art: pizzaArt(PIZZAS[0]) },
+  ...CATEGORIES.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    count: c.items.length,
+    from: Math.min(...c.items.map((i) => i.price)),
+    art: foodArt(c.items[0].art, c.items[0].tint),
+  })),
+];
+
+// points décoratifs sur le radar (angle doré pour une répartition harmonieuse)
+const radarDots = Array.from({ length: 11 }, (_, i) => {
+  const a = i * 2.39996 + 0.6;
+  const d = 0.26 + ((i * 0.37) % 0.6);
+  return [(50 + Math.cos(a) * d * 46).toFixed(1), (50 + Math.sin(a) * d * 46).toFixed(1)];
+});
+
+const marquee = ['Pâte fraîche du jour', 'Mozzarella fondante', `Livraison gratuite ${SITE.delivery.radiusKm} km`, SITE.offer.short, 'Ouvert 7j/7', 'Sur place · À emporter'];
+---
+
+<Base title={title} description={description} rawTitle jsonLd={[faqSchema(FAQS)]} bodyClass="page-home">
+  <!-- ============ HERO 3D ============ -->
+  <section class="hero" data-hero aria-labelledby="hero-title">
+    <div class="hero__bg" aria-hidden="true">
+      <div class="hero__glow hero__glow--1"></div>
+      <div class="hero__glow hero__glow--2"></div>
+      <span class="hero__word" data-hero-word>PIZZA</span>
+    </div>
+
+    <div class="hero__stage" aria-hidden="true">
+      <canvas class="hero__canvas" data-hero-canvas></canvas>
+      <div class="hero__fallback" data-hero-fallback set:html={heroPizza} />
+    </div>
+
+    <div class="container hero__content" data-hero-content>
+      <h1 id="hero-title" class="hero__title">
+        <span class="eyebrow hero__eyebrow" data-reveal>Pizzeria artisanale · {SITE.address.city}</span>
+        <span class="hero__headline" data-split data-split-now data-delay="0.2">
+          La pizza qui rend <span class="serif text-saffron">heureux.</span>
+        </span>
+      </h1>
+      <p class="lead hero__lead" data-reveal data-delay="0.35">
+        Pâte fraîche pétrie chaque jour, garnitures généreuses et mozzarella qui file. En livraison, à emporter ou sur place à {SITE.address.city}.
+      </p>
+      <div class="hero__ctas" data-reveal data-delay="0.45">
+        <a href="/carte/" class="btn btn--lg" data-magnetic>Découvrir la carte <Icon name="arrow" /></a>
+        <a href={telHref} class="btn btn--lg btn--ghost"><Icon name="phone" /> {SITE.phone}</a>
+      </div>
+      <ul class="hero__chips" data-reveal data-delay="0.55">
+        <li class="chip"><Icon name="bike" /> Livraison gratuite · {SITE.delivery.radiusKm} km</li>
+        <li class="chip"><Icon name="clock" /> Ouvert 7j/7</li>
+        <li class="chip"><Icon name="store" /> Sur place & à emporter</li>
+      </ul>
+    </div>
+
+    <a href="/carte/pizzas/" class="hero__sticker" aria-label={`${SITE.offer.title} — voir les pizzas`} data-reveal data-delay="0.7">
+      <svg viewBox="0 0 200 200" class="hero__sticker-ring" aria-hidden="true">
+        <defs><path id="sticker-circle" d="M100 100m-76 0a76 76 0 1 1 152 0a76 76 0 1 1-152 0"></path></defs>
+        <text><textPath href="#sticker-circle">★ 2 pizzas achetées ★ la 3e offerte ★ Senior & Méga </textPath></text>
+      </svg>
+      <span class="hero__sticker-core">3<sup>e</sup><small>offerte</small></span>
+    </a>
+
+    <div class="hero__scroll" aria-hidden="true">
+      <span>Scrollez</span>
+      <span class="hero__scroll-line"></span>
+    </div>
+  </section>
+
+  <!-- ============ BANDEAU ============ -->
+  <div class="band-wrap" aria-hidden="true"><div class="band">
+    <div class="marquee" style="--duration: 28s">
+      {
+        [0, 1].map(() => (
+          <div class="marquee__track">
+            {marquee.map((m) => (
+              <>
+                <span>{m}</span>
+                <Icon name="sparkles" size={28} />
+              </>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div></div>
+
+  <!-- ============ SAVOIR-FAIRE ============ -->
+  <section class="section on-light craft" aria-labelledby="craft-title">
+    <div class="container">
+      <div class="craft__grid">
+        <div class="section-head">
+          <span class="eyebrow">Notre savoir-faire</span>
+          <h2 id="craft-title" class="h-1" data-split>Comme à la maison, <span class="serif text-tomato">en mieux.</span></h2>
+          <p class="lead muted" data-reveal>
+            Chez {SITE.name}, chaque pizza est préparée à la commande avec des ingrédients frais et soigneusement sélectionnés. Classiques
+            indémodables ou recettes plus audacieuses : chaque bouchée est une explosion de saveurs.
+          </p>
+        </div>
+        <ul class="craft__stats" data-reveal>
+          <li><strong><span data-count={PIZZAS.length}>{PIZZAS.length}</span></strong><span>recettes de pizzas</span></li>
+          <li><strong>3</strong><span>tailles : Junior, Senior, Méga</span></li>
+          <li><strong>7<small>/7</small></strong><span>midi & soir</span></li>
+          <li><strong><span data-count={SITE.delivery.radiusKm}>{SITE.delivery.radiusKm}</span><small>km</small></strong><span>de livraison gratuite</span></li>
+        </ul>
+      </div>
+
+      <ul class="craft__cards">
+        <li class="craft__card tilt" data-reveal>
+          <span class="tilt__glare"></span>
+          <span class="craft__icon tilt__pop"><Icon name="wheat" size={30} /></span>
+          <h3 class="h-3">Pâte fraîche du jour</h3>
+          <p class="muted">Pétrie chaque jour sur place pour une pâte moelleuse à cœur et croustillante dessous.</p>
+        </li>
+        <li class="craft__card tilt" data-reveal data-delay="0.08">
+          <span class="tilt__glare"></span>
+          <span class="craft__icon craft__icon--basil tilt__pop"><Icon name="leaf" size={30} /></span>
+          <h3 class="h-3">Ingrédients choisis</h3>
+          <p class="muted">Mozzarella fondante, légumes frais, viandes et fromages sélectionnés avec soin.</p>
+        </li>
+        <li class="craft__card tilt" data-reveal data-delay="0.16">
+          <span class="tilt__glare"></span>
+          <span class="craft__icon craft__icon--saffron tilt__pop"><Icon name="oven" size={30} /></span>
+          <h3 class="h-3">Cuite à la minute</h3>
+          <p class="muted">Garnie et enfournée à la commande, puis livrée chaude jusqu'à votre porte.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ SIGNATURES (scroll horizontal) ============ -->
+  <section class="sig" data-hscroll aria-labelledby="sig-title">
+    <div class="sig__inner">
+      <div class="container sig__head">
+        <div>
+          <span class="eyebrow">Les incontournables</span>
+          <h2 id="sig-title" class="h-1" data-split>Nos pizzas <span class="serif text-tomato">signature</span></h2>
+        </div>
+        <a href="/carte/pizzas/" class="btn btn--ghost">Toutes les pizzas <Icon name="arrow" /></a>
+      </div>
+      <div class="sig__viewport">
+        <ol class="sig__track" data-hscroll-track>
+          {
+            FEATURED.map((p, i) => (
+              <li class="sig__card">
+                <a href={`/pizzas/${p.slug}/`} class="sig__link">
+                  <span class="sig__num">{String(i + 1).padStart(2, '0')}</span>
+                  <div class="sig__art" data-spin set:html={pizzaArt(p)} />
+                  <div class="sig__meta">
+                    <span class="sig__base">{BASES[p.base]}</span>
+                    <h3 class="sig__name">{p.name}</h3>
+                    <p class="sig__ing">{p.ingredients.join(' · ')}</p>
+                    <span class="sig__price">
+                      dès <strong>{formatPrice(minPrice(p))}</strong>
+                      <span class="sig__go"><Icon name="arrow-up-right" size={20} /></span>
+                    </span>
+                  </div>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OFFRE ============ -->
+  <section class="section offer" aria-labelledby="offer-title">
+    <div class="container">
+      <div class="offer__card">
+        <div class="offer__stack" aria-hidden="true">
+          <div class="offer__pz offer__pz--1" data-rotate="120" set:html={pizzaArt(PIZZAS.find((p) => p.slug === 'barbecue')!)} />
+          <div class="offer__pz offer__pz--2" data-rotate="-140" set:html={pizzaArt(PIZZAS.find((p) => p.slug === 'chevre-miel')!)} />
+          <div class="offer__pz offer__pz--3" data-rotate="160" set:html={pizzaArt(PIZZAS.find((p) => p.slug === 'reine')!)} />
+          <span class="offer__free">Offerte !</span>
+        </div>
+        <div class="offer__text">
+          <span class="eyebrow">Offre permanente</span>
+          <h2 id="offer-title" class="h-1" data-split>
+            2 pizzas achetées, <span class="serif text-saffron">la 3e offerte.</span>
+          </h2>
+          <p class="lead muted" data-reveal>{SITE.offer.conditions} Parfait pour les soirées entre amis ou en famille.</p>
+          <div class="offer__ctas" data-reveal>
+            <a href="/carte/pizzas/" class="btn btn--lg btn--saffron" data-magnetic>J'en profite <Icon name="arrow" /></a>
+            <a href="/carte/menus/" class="btn btn--lg btn--ghost">Voir les menus</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LA CARTE ============ -->
+  <section class="section on-light cats" aria-labelledby="cats-title">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">La carte</span>
+        <h2 id="cats-title" class="h-1" data-split>Il y en a pour <span class="serif">toutes les faims.</span></h2>
+        <p class="lead muted" data-reveal>Pizzas, menus, pâtes, salades, paninis, desserts et boissons fraîches.</p>
+      </div>
+      <ul class="cats__grid">
+        {
+          categoryTiles.map((c, i) => (
+            <li data-reveal data-delay={(i % 4) * 0.06}>
+              <a href={`/carte/${c.slug}/`} class:list={['cat tilt', { 'cat--big': i === 0 }]} data-tilt-max="8">
+                <span class="tilt__glare" />
+                <span class="cat__art tilt__pop" set:html={c.art} />
+                <span class="cat__info">
+                  <span class="cat__name">{c.name}</span>
+                  <span class="cat__meta">
+                    {c.count} choix · dès {formatPrice(c.from)}
+                  </span>
+                </span>
+                <span class="cat__arrow">
+                  <Icon name="arrow-up-right" size={22} />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+        <li class="cats__cta" data-reveal data-delay="0.12">
+          <a href="/carte/" class="cat cat--cta">
+            <span class="cat__cta-title">Toute la carte <span class="serif">d'un coup d'œil</span></span>
+            <span class="cat__meta">Pizzas, menus, pâtes, salades, paninis, desserts & boissons</span>
+            <span class="cat__arrow"><Icon name="arrow-up-right" size={22} /></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ COMMENT COMMANDER ============ -->
+  <section class="section steps" aria-labelledby="steps-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Commander en 3 étapes</span>
+        <h2 id="steps-title" class="h-1" data-split>Simple, rapide, <span class="serif text-saffron">délicieux.</span></h2>
+      </div>
+      <ol class="steps__list">
+        <li class="step" data-reveal>
+          <span class="step__num">01</span>
+          <span class="step__icon"><Icon name="search" size={28} /></span>
+          <h3 class="h-3">Choisissez</h3>
+          <p class="muted">Parcourez la carte et composez votre panier : pizzas, menus, desserts…</p>
+        </li>
+        <li class="step" data-reveal data-delay="0.1">
+          <span class="step__num">02</span>
+          <span class="step__icon"><Icon name="phone" size={28} /></span>
+          <h3 class="h-3">Appelez-nous</h3>
+          <p class="muted">Passez commande au <a href={telHref} class="text-saffron">{SITE.phone}</a>, en livraison ou à emporter.</p>
+        </li>
+        <li class="step" data-reveal data-delay="0.2">
+          <span class="step__num">03</span>
+          <span class="step__icon"><Icon name="heart" size={28} /></span>
+          <h3 class="h-3">Régalez-vous</h3>
+          <p class="muted">Votre commande est préparée à la minute et livrée bien chaude chez vous.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ LIVRAISON ============ -->
+  <section class="section on-light zone" aria-labelledby="zone-title">
+    <div class="container zone__grid">
+      <div class="zone__text">
+        <span class="eyebrow">Zone de livraison</span>
+        <h2 id="zone-title" class="h-1" data-split>On livre <span class="serif">autour de chez vous.</span></h2>
+        <p class="lead muted" data-reveal>
+          Livraison gratuite dans un rayon de {SITE.delivery.radiusKm} km autour de {SITE.address.city}, dès {SITE.delivery.minOrder} € de commande.
+        </p>
+        <ul class="zone__towns" data-reveal>
+          {SITE.zones.map((z) => <li class="chip"><Icon name="pin" size={16} /> {z}</li>)}
+        </ul>
+        <a href="/livraison/" class="btn" data-reveal>Tout savoir sur la livraison <Icon name="arrow" /></a>
+      </div>
+      <div class="zone__radar" aria-hidden="true">
+        <div class="radar">
+          <span class="radar__ring" style="--s: 1"></span>
+          <span class="radar__ring" style="--s: 0.72"></span>
+          <span class="radar__ring" style="--s: 0.44"></span>
+          <span class="radar__sweep"></span>
+          {radarDots.map(([x, y]) => <span class="radar__dot" style={`left:${x}%; top:${y}%`} />)}
+          <span class="radar__center">
+            <svg viewBox="0 0 64 64"><path d="M9.5 19.5c14.8-5.6 30.2-5.6 45 0L35.2 56.6c-1.4 2.6-5 2.6-6.4 0L9.5 19.5Z" fill="#ffb42e" /><path d="M6.5 17.8c16.4-7.1 34.6-7.1 51 0" fill="none" stroke="#ff4d1f" stroke-width="7.5" stroke-linecap="round" /><circle cx="24.2" cy="27.6" r="3.9" fill="#ff4d1f" /><circle cx="39.8" cy="27.6" r="3.9" fill="#ff4d1f" /><path d="M24.5 36.2c4.6 4.6 10.4 4.6 15 0" fill="none" stroke="#120c0a" stroke-width="3.4" stroke-linecap="round" /></svg>
+          </span>
+          <span class="radar__label">{SITE.delivery.radiusKm} km</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HORAIRES ============ -->
+  <section class="section hours-sec" aria-labelledby="hours-title">
+    <div class="container hours-sec__grid">
+      <div>
+        <span class="eyebrow">Horaires & adresse</span>
+        <h2 id="hours-title" class="h-1" data-split>Midi & soir, <span class="serif text-saffron">7 jours sur 7.</span></h2>
+        <address class="hours-sec__addr" data-reveal>
+          <Icon name="pin" />
+          <span>{SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</span>
+        </address>
+        <div class="hours-sec__ctas" data-reveal>
+          <a href="/contact/" class="btn btn--ghost">Itinéraire & contact <Icon name="arrow" /></a>
+        </div>
+      </div>
+      <div data-reveal><Hours /></div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section on-light" aria-labelledby="faq-title">
+    <div class="container faq-grid">
+      <div class="section-head">
+        <span class="eyebrow">Questions fréquentes</span>
+        <h2 id="faq-title" class="h-1" data-split>Vous vous <span class="serif">demandez…</span></h2>
+        <p class="lead muted" data-reveal>Une autre question ? Appelez-nous au <a href={telHref}><strong>{SITE.phone}</strong></a>.</p>
+      </div>
+      <Faq items={FAQS} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    min-height: max(100svh, 680px);
+    display: grid;
+    align-items: center;
+    padding-top: var(--header-h);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+  }
+  .hero__glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+  }
+  .hero__glow--1 {
+    width: 60vw;
+    height: 60vw;
+    right: -12vw;
+    top: 5%;
+    background: radial-gradient(circle, rgba(255, 77, 31, 0.5), transparent 65%);
+  }
+  .hero__glow--2 {
+    width: 40vw;
+    height: 40vw;
+    left: -10vw;
+    bottom: -20%;
+    background: radial-gradient(circle, rgba(255, 180, 46, 0.22), transparent 65%);
+  }
+  .hero__word {
+    position: absolute;
+    left: 50%;
+    bottom: -0.16em;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(9rem, 30vw, 30rem);
+    letter-spacing: -0.07em;
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 246, 234, 0.09);
+    white-space: nowrap;
+    user-select: none;
+  }
+  .hero__stage {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    right: -7vw;
+    width: min(60vw, 960px);
+    display: grid;
+    place-items: center;
+  }
+  .hero__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out);
+  }
+  :global(.has-webgl) .hero__canvas {
+    opacity: 1;
+  }
+  .hero__fallback {
+    width: min(78%, 560px);
+    filter: drop-shadow(0 40px 50px rgba(0, 0, 0, 0.55));
+    animation: spin 60s linear infinite;
+    transition: opacity 0.6s;
+  }
+  :global(.has-webgl) .hero__fallback {
+    opacity: 0;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .hero__content {
+    position: relative;
+    display: grid;
+    gap: 28px;
+    padding-block: 60px 120px;
+  }
+  .hero__title {
+    display: grid;
+    gap: 22px;
+    max-width: 11ch;
+    font-size: clamp(3.4rem, 9vw, 8.6rem);
+    line-height: 0.9;
+    letter-spacing: -0.055em;
+  }
+  .hero__eyebrow {
+    font-size: 0.82rem;
+    letter-spacing: 0.2em;
+    line-height: 1.3;
+  }
+  .hero__headline .serif {
+    font-size: 1.08em;
+    letter-spacing: -0.03em;
+  }
+  .hero__lead {
+    max-width: 44ch;
+    color: var(--muted-on-dark);
+  }
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .hero__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .hero__sticker {
+    position: absolute;
+    right: clamp(16px, 6vw, 90px);
+    bottom: clamp(90px, 14vh, 150px);
+    width: 150px;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--saffron);
+    color: var(--ink);
+    box-shadow: 0 24px 50px -16px rgba(255, 180, 46, 0.55);
+    transition: transform 0.6s var(--ease-spring);
+  }
+  .hero__sticker:hover {
+    transform: scale(1.08) rotate(-8deg);
+  }
+  .hero__sticker-ring {
+    position: absolute;
+    inset: 0;
+    animation: spin 18s linear infinite;
+  }
+  .hero__sticker-ring text {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--ink);
+  }
+  .hero__sticker-core {
+    display: grid;
+    justify-items: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.6rem;
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+  }
+  .hero__sticker-core sup {
+    font-size: 0.45em;
+    position: absolute;
+    margin-left: 1.3em;
+    margin-top: 0.1em;
+  }
+  .hero__sticker-core small {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .hero__scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+  }
+  .hero__scroll-line {
+    width: 1.5px;
+    height: 44px;
+    background: linear-gradient(var(--cream), transparent);
+    transform-origin: top;
+    animation: scrollLine 2.2s var(--ease-out) infinite;
+  }
+  @keyframes scrollLine {
+    0% {
+      transform: scaleY(0);
+    }
+    50% {
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+    51% {
+      transform-origin: bottom;
+    }
+    100% {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+  }
+  @media (max-width: 900px) {
+    .hero {
+      align-items: start;
+    }
+    .hero__stage {
+      top: auto;
+      right: 50%;
+      transform: translateX(50%);
+      width: 130vw;
+      height: 62svh;
+      bottom: -4svh;
+    }
+    .hero__content {
+      padding-block: 36px 50svh;
+    }
+    .hero__title {
+      max-width: 100%;
+      font-size: clamp(3.1rem, 14vw, 5.5rem);
+    }
+    .hero__chips {
+      display: none;
+    }
+    .hero__sticker {
+      width: 112px;
+      bottom: 20svh;
+    }
+    .hero__sticker-core {
+      font-size: 2rem;
+    }
+    .hero__sticker-ring text {
+      font-size: 16px;
+    }
+    .hero__scroll {
+      display: none;
+    }
+  }
+
+  /* ---------- BANDEAU ---------- */
+  .band-wrap {
+    position: relative;
+    z-index: 2;
+    overflow-x: clip;
+    padding-block: 30px;
+    margin-block: -50px;
+  }
+  .band {
+    position: relative;
+    z-index: 2;
+    background: var(--tomato);
+    color: var(--cream);
+    padding-block: 18px;
+    transform: rotate(-2deg) scale(1.04);
+    margin-block: -20px;
+    box-shadow: 0 20px 50px -20px rgba(255, 77, 31, 0.6);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
+  .band :global(svg) {
+    color: var(--saffron);
+    flex: none;
+  }
+  .band span {
+    white-space: nowrap;
+  }
+
+  /* ---------- SAVOIR-FAIRE ---------- */
+  .craft {
+    padding-top: clamp(110px, 14vw, 180px);
+  }
+  .craft__grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 48px;
+    align-items: end;
+  }
+  .craft__stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line-light);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: clamp(40px, 6vw, 72px);
+  }
+  .craft__stats li {
+    display: grid;
+    gap: 6px;
+    padding: 26px 24px;
+    background: var(--cream);
+  }
+  .craft__stats strong {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    color: var(--tomato);
+  }
+  .craft__stats small {
+    font-size: 0.45em;
+    margin-left: 2px;
+  }
+  .craft__stats li > span {
+    font-size: 0.92rem;
+    color: var(--muted-on-light);
+    font-weight: 600;
+  }
+  .craft__cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .craft__card {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: 32px 28px;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: 0 30px 60px -40px rgba(60, 20, 0, 0.35);
+  }
+  .craft__icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--tomato);
+    color: #fff;
+    margin-bottom: 10px;
+    box-shadow: 0 14px 30px -10px var(--tomato-glow);
+  }
+  .craft__icon--basil {
+    background: var(--basil);
+    box-shadow: 0 14px 30px -10px rgba(47, 168, 102, 0.5);
+  }
+  .craft__icon--saffron {
+    background: var(--saffron);
+    color: var(--ink);
+    box-shadow: 0 14px 30px -10px rgba(255, 180, 46, 0.5);
+  }
+  @media (max-width: 900px) {
+    .craft__grid,
+    .craft__cards {
+      grid-template-columns: 1fr;
+    }
+    .craft__grid {
+      gap: 0;
+    }
+  }
+
+  /* ---------- SIGNATURES ---------- */
+  .sig {
+    position: relative;
+    background: var(--ink);
+    overflow: hidden;
+  }
+  .sig__inner {
+    min-height: 100svh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    gap: clamp(32px, 5vw, 56px);
+    padding-block: clamp(80px, 10vw, 120px);
+  }
+  .sig__head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .sig__head > div {
+    display: grid;
+    gap: 16px;
+  }
+  .sig__viewport {
+    overflow: visible;
+    min-width: 0;
+  }
+  .sig__track {
+    display: flex;
+    gap: 24px;
+    padding-inline: max(var(--gutter), calc((100vw - var(--container)) / 2 + var(--gutter)));
+    width: max-content;
+  }
+  .sig__card {
+    flex: none;
+    width: clamp(300px, 30vw, 420px);
+  }
+  .sig__link {
+    position: relative;
+    display: grid;
+    gap: 20px;
+    height: 100%;
+    padding: 28px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(160deg, var(--ink-3), var(--ink-2));
+    border: 1px solid var(--line-dark);
+    overflow: hidden;
+    transition:
+      border-color 0.4s,
+      transform 0.6s var(--ease-out);
+  }
+  .sig__link::before {
+    content: '';
+    position: absolute;
+    inset: auto -30% -40% -30%;
+    height: 70%;
+    background: radial-gradient(circle, rgba(255, 77, 31, 0.28), transparent 65%);
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .sig__link:hover {
+    border-color: rgba(255, 180, 46, 0.5);
+    transform: translateY(-8px);
+  }
+  .sig__link:hover::before {
+    opacity: 1;
+  }
+  .sig__num {
+    position: absolute;
+    top: 20px;
+    left: 26px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--saffron);
+  }
+  .sig__art {
+    width: 82%;
+    margin: 10px auto 0;
+    filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.55));
+  }
+  .sig__meta {
+    position: relative;
+    display: grid;
+    gap: 8px;
+  }
+  .sig__base {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tomato);
+  }
+  .sig__name {
+    font-size: clamp(2rem, 3.2vw, 2.8rem);
+  }
+  .sig__ing {
+    font-size: 0.9rem;
+    color: var(--muted-on-dark);
+    min-height: 3em;
+  }
+  .sig__price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-dark);
+    color: var(--muted-on-dark);
+    font-size: 0.92rem;
+  }
+  .sig__price strong {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--cream);
+    letter-spacing: -0.03em;
+    margin-left: 4px;
+  }
+  .sig__go {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--ink);
+    transition:
+      transform 0.5s var(--ease-spring),
+      background-color 0.3s;
+  }
+  .sig__link:hover .sig__go {
+    transform: rotate(45deg);
+    background: var(--tomato);
+    color: #fff;
+  }
+  @media (max-width: 899px) {
+    .sig__viewport {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sig__viewport::-webkit-scrollbar {
+      display: none;
+    }
+    .sig__card {
+      scroll-snap-align: center;
+      width: min(82vw, 360px);
+    }
+    .sig__track {
+      padding-inline: var(--gutter);
+    }
+  }
+
+  /* ---------- OFFRE ---------- */
+  .offer__card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+    padding: clamp(32px, 6vw, 80px);
+    border-radius: clamp(28px, 4vw, 48px);
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255, 180, 46, 0.2), transparent 50%),
+      linear-gradient(135deg, var(--tomato) 0%, var(--tomato-2) 100%);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .offer__card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(90deg, #000, transparent 70%);
+  }
+  .offer__text {
+    display: grid;
+    gap: 22px;
+  }
+  .offer__text .eyebrow {
+    color: var(--saffron);
+  }
+  .offer__text .muted {
+    color: rgba(255, 246, 234, 0.85);
+  }
+  .offer__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .offer__stack {
+    position: relative;
+    aspect-ratio: 1;
+    perspective: 900px;
+  }
+  .offer__pz {
+    position: absolute;
+    width: 62%;
+    filter: drop-shadow(0 30px 30px rgba(80, 10, 0, 0.5));
+  }
+  .offer__pz--1 {
+    left: 0;
+    top: 4%;
+  }
+  .offer__pz--2 {
+    right: 0;
+    top: 16%;
+    width: 55%;
+  }
+  .offer__pz--3 {
+    left: 18%;
+    bottom: 0;
+    width: 58%;
+  }
+  .offer__free {
+    position: absolute;
+    left: 58%;
+    bottom: 12%;
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: var(--saffron);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    transform: rotate(-10deg);
+    box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.4);
+    animation: wobble 3s ease-in-out infinite;
+  }
+  @keyframes wobble {
+    50% {
+      transform: rotate(-4deg) scale(1.06);
+    }
+  }
+  @media (max-width: 900px) {
+    .offer__card {
+      grid-template-columns: 1fr;
+    }
+    .offer__stack {
+      width: min(100%, 420px);
+      margin-inline: auto;
+    }
+  }
+
+  /* ---------- CATÉGORIES ---------- */
+  .cats__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .cats__grid > li:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .cat {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    height: 100%;
+    min-height: 250px;
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+  }
+  .cat--big {
+    background: var(--ink);
+    color: var(--cream);
+  }
+  .cats__cta {
+    grid-column: span 2;
+  }
+  .cat--cta {
+    align-content: end;
+    grid-template-rows: auto;
+    gap: 10px;
+    background:
+      radial-gradient(circle at 85% 15%, rgba(255, 180, 46, 0.35), transparent 50%),
+      var(--tomato);
+    color: #fff;
+  }
+  .cat--cta .cat__meta {
+    color: rgba(255, 255, 255, 0.85);
+    padding-right: 60px;
+  }
+  .cat__cta-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+  .cat--cta .cat__arrow {
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .cat__art {
+    display: grid;
+    place-items: center;
+    padding: 6px 20px;
+  }
+  .cat__art :global(svg) {
+    width: min(100%, 170px);
+    transition: transform 0.9s var(--ease-spring);
+  }
+  .cat--big .cat__art :global(svg) {
+    width: min(100%, 380px);
+    filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.5));
+  }
+  .cat:hover .cat__art :global(svg) {
+    transform: scale(1.08) rotate(-10deg);
+  }
+  .cat__info {
+    display: grid;
+    gap: 2px;
+    padding-right: 52px;
+  }
+  .cat__name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.6rem;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+  .cat--big .cat__name {
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+  }
+  .cat__meta {
+    font-size: 0.86rem;
+    color: var(--muted-on-light);
+    font-weight: 600;
+  }
+  .cat--big .cat__meta {
+    color: var(--muted-on-dark);
+  }
+  .cat__arrow {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--cream);
+    transition:
+      transform 0.5s var(--ease-spring),
+      background-color 0.3s;
+  }
+  .cat--big .cat__arrow {
+    background: var(--tomato);
+  }
+  .cat:hover .cat__arrow {
+    transform: rotate(45deg) scale(1.08);
+    background: var(--tomato);
+  }
+  @media (max-width: 1000px) {
+    .cats__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 520px) {
+    .cats__grid {
+      gap: 10px;
+    }
+    .cat {
+      min-height: 200px;
+      padding: 14px;
+    }
+    .cat__name {
+      font-size: 1.25rem;
+    }
+    .cat__arrow {
+      width: 36px;
+      height: 36px;
+      right: 12px;
+      bottom: 12px;
+    }
+    .cat__info {
+      padding-right: 40px;
+    }
+  }
+
+  /* ---------- ÉTAPES ---------- */
+  .steps__list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    counter-reset: step;
+  }
+  .step {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: 36px 30px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line-dark);
+    background: linear-gradient(180deg, rgba(255, 246, 234, 0.04), transparent);
+    overflow: hidden;
+  }
+  .step__num {
+    position: absolute;
+    right: 18px;
+    top: 6px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 6.5rem;
+    line-height: 1;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 180, 46, 0.35);
+  }
+  .step__icon {
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+  @media (max-width: 900px) {
+    .steps__list {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---------- ZONE ---------- */
+  .zone__grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(40px, 6vw, 90px);
+    align-items: center;
+  }
+  .zone__text {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+  }
+  .zone__towns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .zone__towns :global(svg) {
+    color: var(--tomato);
+  }
+  .radar {
+    position: relative;
+    width: min(100%, 520px);
+    aspect-ratio: 1;
+    margin-inline: auto;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, var(--cream-2) 100%);
+    box-shadow:
+      inset 0 0 0 1px var(--line-light),
+      0 40px 80px -40px rgba(60, 20, 0, 0.35);
+    overflow: hidden;
+  }
+  .radar__ring {
+    position: absolute;
+    inset: calc((1 - var(--s)) * 50%);
+    border-radius: 50%;
+    border: 1.5px dashed rgba(229, 55, 12, 0.35);
+  }
+  .radar__sweep {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(255, 77, 31, 0.28), transparent 25%);
+    animation: spin 5s linear infinite;
+  }
+  .radar__dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin: -6px;
+    border-radius: 50%;
+    background: var(--tomato);
+    box-shadow: 0 0 0 6px rgba(255, 77, 31, 0.15);
+    animation: blip 2.6s var(--ease-out) infinite;
+  }
+  .radar__dot:nth-child(3n) {
+    animation-delay: 0.8s;
+  }
+  .radar__dot:nth-child(3n + 1) {
+    animation-delay: 1.6s;
+  }
+  @keyframes blip {
+    50% {
+      transform: scale(1.35);
+      box-shadow: 0 0 0 10px rgba(255, 77, 31, 0.08);
+    }
+  }
+  .radar__center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 84px;
+    height: 84px;
+    margin: -42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 12px rgba(18, 12, 10, 0.08);
+    animation: pulse 2.4s var(--ease-out) infinite;
+  }
+  .radar__center svg {
+    width: 52px;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 77, 31, 0.45);
+    }
+    100% {
+      box-shadow: 0 0 0 40px rgba(255, 77, 31, 0);
+    }
+  }
+  .radar__label {
+    position: absolute;
+    right: 12%;
+    top: 12%;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-weight: 800;
+  }
+  @media (max-width: 900px) {
+    .zone__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---------- HORAIRES ---------- */
+  .hours-sec__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 90px);
+    align-items: center;
+  }
+  .hours-sec__grid > div:first-child {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+  }
+  .hours-sec__addr {
+    display: flex;
+    gap: 12px;
+    font-style: normal;
+    font-size: 1.15rem;
+    color: var(--muted-on-dark);
+  }
+  .hours-sec__addr :global(svg) {
+    color: var(--tomato);
+    flex: none;
+    margin-top: 3px;
+  }
+  @media (max-width: 900px) {
+    .hours-sec__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: clamp(32px, 6vw, 90px);
+    align-items: start;
+  }
+  .faq-grid .section-head {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+  }
+  .faq-grid a {
+    color: var(--tomato-2);
+  }
+  @media (max-width: 900px) {
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+    .faq-grid .section-head {
+      position: static;
+    }
+  }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger } from '../scripts/motion';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function webglAvailable() {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  }
+
+  let scene: import('../scripts/pizza3d').PizzaScene | null = null;
+  let progress = 0;
+
+  // L'épinglage est créé tout de suite (pas de saut de mise en page), la 3D se branche ensuite.
+  if (hero && !reduce) {
+    const content = hero.querySelector('[data-hero-content]');
+    const word = hero.querySelector('[data-hero-word]');
+    const fallback = hero.querySelector('[data-hero-fallback]');
+    gsap
+      .timeline({
+        scrollTrigger: {
+          trigger: hero,
+          start: 'top top',
+          end: '+=110%',
+          scrub: true,
+          pin: true,
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            progress = self.progress;
+            scene?.setProgress(progress);
+          },
+        },
+      })
+      .to(content, { y: -120, opacity: 0, ease: 'none' }, 0.15)
+      .to(word, { scale: 1.25, opacity: 0.3, ease: 'none' }, 0)
+      .to(fallback, { scale: 1.2, rotate: 90, ease: 'none' }, 0);
+    ScrollTrigger.refresh();
+  }
+
+  async function boot() {
+    if (!hero || !canvas || !webglAvailable()) return;
+    const { createPizzaScene } = await import('../scripts/pizza3d');
+    scene = createPizzaScene(canvas);
+    if (!scene) return;
+    scene.setProgress(progress);
+    document.documentElement.classList.add('has-webgl');
+    if (!reduce) {
+      window.addEventListener(
+        'pointermove',
+        (e) => scene?.setPointer((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1),
+        { passive: true },
+      );
+    }
+  }
+
+  // on laisse le texte (LCP) s'afficher avant de charger la 3D
+  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(boot, { timeout: 1200 });
+  else setTimeout(boot, 300);
+</script>

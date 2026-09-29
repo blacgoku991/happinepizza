@@ -1,0 +1,89 @@
+# Happiness Pizza — configuration Apache
+Options -Indexes
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # HTTPS + domaine sans www
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^(.*)$ https://happinesspizza.fr/$1 [R=301,L]
+</IfModule>
+
+# Redirections 301 des anciennes URL WordPress / WooCommerce
+<IfModule mod_alias.c>
+  RedirectMatch 301 ^/home/?$ /
+  RedirectMatch 301 ^/happiness-pizza/?$ /a-propos/
+  RedirectMatch 301 ^/contacts-2/?$ /contact/
+  RedirectMatch 301 ^/boutique/?$ /carte/
+  RedirectMatch 301 ^/shop/?$ /carte/
+  RedirectMatch 301 ^/panier/?$ /carte/
+  RedirectMatch 301 ^/cart/?$ /carte/
+  RedirectMatch 301 ^/commander/?$ /carte/
+  RedirectMatch 301 ^/checkout/?$ /carte/
+  RedirectMatch 301 ^/mon-compte/?$ /contact/
+  RedirectMatch 301 ^/my-account/?$ /contact/
+  RedirectMatch 301 ^/categorie-produit/pizzas-junior(/.*)?$ /carte/pizzas/
+  RedirectMatch 301 ^/categorie-produit/pizzas-senior(/.*)?$ /carte/pizzas/
+  RedirectMatch 301 ^/categorie-produit/pizzas-mega(/.*)?$ /carte/pizzas/
+  RedirectMatch 301 ^/categorie-produit/pates(/.*)?$ /carte/pates/
+  RedirectMatch 301 ^/categorie-produit/salades(/.*)?$ /carte/salades/
+  RedirectMatch 301 ^/categorie-produit/paninis(/.*)?$ /carte/paninis/
+  RedirectMatch 301 ^/categorie-produit/desserts(/.*)?$ /carte/desserts/
+  RedirectMatch 301 ^/categorie-produit/boissons(/.*)?$ /carte/boissons/
+  RedirectMatch 301 ^/categorie-produit/offres(/.*)?$ /carte/menus/
+  RedirectMatch 301 ^/categorie-produit/tex-mex(/.*)?$ /carte/
+  RedirectMatch 301 ^/categorie-produit/hot-bread(/.*)?$ /carte/
+  RedirectMatch 301 ^/produit/pizza-reine(-junior|-senior|-mega)?/?$ /pizzas/reine/
+  RedirectMatch 301 ^/produit/pizza-calzone(-junior|-senior|-mega)?/?$ /pizzas/calzone/
+  RedirectMatch 301 ^/produit/pizza-campione(-junior|-senior|-mega)?/?$ /pizzas/campione/
+  RedirectMatch 301 ^/produit/pizza-bresilienne(-junior|-senior|-mega)?/?$ /pizzas/bresilienne/
+  RedirectMatch 301 ^/produit/pizza-chicken(-junior|-senior|-mega)?/?$ /pizzas/chicken/
+  RedirectMatch 301 ^/produit/pizza-fermiere(-junior|-senior|-mega)?/?$ /pizzas/fermiere/
+  RedirectMatch 301 ^/produit/pizza-barbecue(-junior|-senior|-mega)?/?$ /pizzas/barbecue/
+  RedirectMatch 301 ^/produit/pizza-boursin(-junior|-senior|-mega)?/?$ /pizzas/boursin/
+  RedirectMatch 301 ^/produit/pizza-burger(-junior|-senior|-mega)?/?$ /pizzas/burger/
+  RedirectMatch 301 ^/produit/pizza-chilly(-junior|-senior|-mega)?/?$ /pizzas/chilly/
+  RedirectMatch 301 ^/produit/pizza-british(-junior|-senior|-mega)?/?$ /pizzas/british/
+  RedirectMatch 301 ^/produit/pizza-4-fromages(-junior|-senior|-mega)?/?$ /pizzas/4-fromages/
+  RedirectMatch 301 ^/produit/pizza-chevre-miel(-junior|-senior|-mega)?/?$ /pizzas/chevre-miel/
+  RedirectMatch 301 ^/produit/pizza-salmone(-junior|-senior|-mega)?/?$ /pizzas/salmone/
+  RedirectMatch 301 ^/produit/pizza-au-choix(-junior|-senior|-mega)?/?$ /pizzas/au-choix/
+  RedirectMatch 301 ^/produit/menu-.*$ /carte/menus/
+  RedirectMatch 301 ^/produit/(pennes|spaghetti|tagliatelle).*$ /carte/pates/
+  RedirectMatch 301 ^/produit/salade.*$ /carte/salades/
+  RedirectMatch 301 ^/produit/panini-nutella/?$ /carte/desserts/
+  RedirectMatch 301 ^/produit/panini.*$ /carte/paninis/
+  RedirectMatch 301 ^/produit/.*$ /carte/
+  RedirectMatch 301 ^/categorie-produit/.*$ /carte/
+  RedirectMatch 301 ^/wp-(admin|login\.php).*$ /
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml application/xml text/xml application/manifest+json
+</IfModule>
+
+# Cache navigateur
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 hour"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "^.*\.(js|css|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+AddType application/manifest+json .webmanifest

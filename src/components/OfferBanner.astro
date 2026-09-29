@@ -1,0 +1,83 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { pizzaArt } from '../lib/pizzaArt';
+import { pizzaBySlug } from '../data/menu';
+const deco = pizzaBySlug('4-fromages') ?? pizzaBySlug('reine')!;
+---
+
+<aside class="obanner" aria-label="Offre en cours" data-reveal>
+  <div class="obanner__art" aria-hidden="true" data-rotate="140" set:html={pizzaArt(deco)} />
+  <div class="obanner__icon"><Icon name="gift" size={28} /></div>
+  <div class="obanner__text">
+    <p class="obanner__title">{SITE.offer.title}</p>
+    <p class="obanner__sub">{SITE.offer.conditions}</p>
+  </div>
+  <a href="/carte/pizzas/" class="btn btn--saffron">Choisir mes pizzas <Icon name="arrow" /></a>
+</aside>
+
+<style>
+  .obanner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px 24px;
+    flex-wrap: wrap;
+    margin-top: clamp(56px, 7vw, 96px);
+    padding: 28px clamp(24px, 4vw, 44px);
+    padding-right: clamp(24px, 22vw, 300px);
+    border-radius: var(--radius-lg);
+    background: var(--ink);
+    color: var(--cream);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .obanner__art {
+    position: absolute;
+    z-index: -1;
+    right: -60px;
+    top: 50%;
+    width: 300px;
+    margin-top: -150px;
+    opacity: 0.9;
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+  }
+  .obanner__icon {
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--tomato);
+  }
+  .obanner__text {
+    flex: 1 1 280px;
+    display: grid;
+    gap: 4px;
+  }
+  .obanner__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+  .obanner__sub {
+    color: var(--muted-on-dark);
+    font-size: 0.95rem;
+  }
+  @media (max-width: 700px) {
+    .obanner {
+      padding-right: 24px;
+      padding-bottom: 150px;
+    }
+    .obanner__art {
+      top: auto;
+      bottom: -120px;
+      margin-top: 0;
+      right: -40px;
+      width: 240px;
+    }
+  }
+</style>

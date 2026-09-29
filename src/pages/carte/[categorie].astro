@@ -1,0 +1,251 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
+import PizzaCard from '../../components/PizzaCard.astro';
+import ItemCard from '../../components/ItemCard.astro';
+import PizzaFilters from '../../components/PizzaFilters.astro';
+import OfferBanner from '../../components/OfferBanner.astro';
+import Icon from '../../components/Icon.astro';
+import { PIZZAS, CATEGORIES, PIZZA_CATEGORY, ALL_CATEGORIES, type Category } from '../../data/menu';
+import { SITE, telHref, formatPrice } from '../../data/site';
+import { breadcrumbSchema, itemListSchema, pizzaMenuItem } from '../../lib/schema';
+import { pizzaArt } from '../../lib/pizzaArt';
+import { foodArt } from '../../lib/foodArt';
+
+export function getStaticPaths() {
+  return [{ params: { categorie: PIZZA_CATEGORY.slug } }, ...CATEGORIES.map((c) => ({ params: { categorie: c.slug } }))];
+}
+
+const { categorie } = Astro.params;
+const isPizza = categorie === PIZZA_CATEGORY.slug;
+const cat: (Category & { items: Category['items'] }) | undefined = CATEGORIES.find((c) => c.slug === categorie);
+const meta = isPizza ? PIZZA_CATEGORY : cat!;
+const city = SITE.address.city;
+
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'La carte', path: '/carte/' },
+  { name: meta.name, path: `/carte/${categorie}/` },
+];
+
+const minP = isPizza ? Math.min(...PIZZAS.flatMap((p) => Object.values(p.prices) as number[])) : Math.min(...cat!.items.map((i) => i.price));
+
+/* Texte éditorial propre à chaque catégorie (SEO local) */
+const SEO_TEXT: Record<string, { h: string; p: string[] }> = {
+  pizzas: {
+    h: `Des pizzas artisanales livrées à ${city}`,
+    p: [
+      `Chez ${SITE.name}, chaque pizza est préparée à la commande sur une pâte fraîche pétrie chaque jour, puis garnie généreusement : sauce tomate, crème fraîche, sauce barbecue ou sauce thaï, mozzarella fondante et ingrédients soigneusement sélectionnés.`,
+      `Choisissez parmi ${PIZZAS.length} recettes — des classiques comme la Reine ou la 4 Fromages aux créations plus gourmandes comme la Burger, la British ou la Chilly — en taille Junior, Senior ou Méga. Et avec notre offre, 2 pizzas Senior ou Méga achetées = la 3e offerte !`,
+      `Nous livrons gratuitement ${city} et les communes voisines dans un rayon de ${SITE.delivery.radiusKm} km (${SITE.zones.slice(1, 6).join(', ')}…). Vous pouvez aussi emporter votre pizza ou la déguster sur place.`,
+    ],
+  },
+  menus: {
+    h: `Des formules pizza pour tous à ${city}`,
+    p: [
+      `Envie de partager ? Le Menu Ambiance réunit 2 pizzas Senior au choix et une grande bouteille de Coca, le Menu Duo 2 pizzas Méga pour les grandes tablées. Pour les plus petits, nos menus enfant (pizza ou nuggets) sont servis avec jus de fruits et compote.`,
+      `Toutes nos formules sont disponibles en livraison à ${city} et alentours, à emporter ou sur place.`,
+    ],
+  },
+  pates: {
+    h: `Pâtes gratinées à emporter ou en livraison`,
+    p: [
+      `Spaghetti à la bolognaise, tagliatelles au saumon fumé et à l'aneth ou pennes fromagère au poulet : nos pâtes sont cuisinées à la minute et parsemées de parmesan.`,
+      `Une alternative gourmande à la pizza, livrée chez vous à ${city} et dans un rayon de ${SITE.delivery.radiusKm} km.`,
+    ],
+  },
+  salades: {
+    h: `Des salades fraîches et complètes`,
+    p: [
+      `César au poulet rôti, Fromagère ou Gourmande au thon et au chèvre : nos salades composées associent méli-mélo de salade, tomates cerises et croûtons pour un repas frais et équilibré.`,
+      `À commander seules ou en accompagnement de vos pizzas, en livraison ou à emporter à ${city}.`,
+    ],
+  },
+  paninis: {
+    h: `Paninis chauds et croustillants à ${city}`,
+    p: [
+      `Poulet fumé, thon, jambon, chèvre, bœuf haché ou 3 fromages : nos paninis sont dorés à la presse et généreusement garnis de mozzarella fondante, tous au même prix de ${formatPrice(4.9)}.`,
+      `Parfaits pour une pause déjeuner rapide ou un petit creux du soir.`,
+    ],
+  },
+  desserts: {
+    h: `Des desserts pour finir en beauté`,
+    p: [
+      `Tiramisu maison, lava cake au cœur coulant, brownie, cookie, donuts, beignets, muffin ou panini au Nutella et glaces : il y a toujours une petite place pour le dessert.`,
+      `Ajoutez-les à votre commande de pizzas, livrée à ${city} et alentours.`,
+    ],
+  },
+  boissons: {
+    h: `Boissons fraîches pour accompagner vos pizzas`,
+    p: [`Canettes 33 cl, bouteilles 1,5 L, eau, Badoit ou Capri-Sun : complétez votre commande avec une boisson bien fraîche.`],
+  },
+};
+const seo = SEO_TEXT[categorie!];
+
+const heroArt = isPizza ? pizzaArt(PIZZAS.find((p) => p.slug === 'burger') ?? PIZZAS[0]) : foodArt(cat!.items[0].art, cat!.items[0].tint);
+const others = ALL_CATEGORIES.filter((c) => c.slug !== categorie);
+
+const jsonLd = [
+  breadcrumbSchema(crumbs),
+  isPizza
+    ? itemListSchema(`Pizzas ${SITE.name}`, PIZZAS.map((p) => ({ name: `Pizza ${p.name}`, path: `/pizzas/${p.slug}/` })))
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'MenuSection',
+        name: cat!.name,
+        description: cat!.intro,
+        url: new URL(`/carte/${categorie}/`, SITE.url).href,
+        hasMenuItem: cat!.items.map((it) => ({
+          '@type': 'MenuItem',
+          name: it.name,
+          ...(it.description ? { description: it.description } : {}),
+          offers: { '@type': 'Offer', price: it.price.toFixed(2), priceCurrency: 'EUR' },
+        })),
+      },
+  ...(isPizza ? [{ '@context': 'https://schema.org', '@type': 'MenuSection', name: 'Pizzas', hasMenuItem: PIZZAS.map(pizzaMenuItem) }] : []),
+];
+---
+
+<Base title={meta.seoTitle} description={meta.seoDescription} jsonLd={jsonLd} rawTitle={false}>
+  <PageHero crumbs={crumbs} eyebrow={`${meta.emoji} La carte · dès ${formatPrice(minP)}`} title={meta.title} intro={meta.intro}>
+    <div class="cat-hero__ctas" data-reveal data-delay="0.3">
+      <a href={telHref} class="btn"><Icon name="phone" /> Commander : {SITE.phone}</a>
+      <button type="button" class="btn btn--ghost" data-cart-open><Icon name="bag" /> Mon panier</button>
+    </div>
+    <div slot="art" class:list={['cat-hero__art', { 'cat-hero__art--spin': isPizza }]} data-speed="-0.4" set:html={heroArt} />
+  </PageHero>
+
+  <div class="on-light cat-page">
+    <CategoryNav mode="page" current={categorie} />
+    <section class="cat-page__list" data-filter-scope aria-label={meta.name}>
+      <div class="container">
+        {
+          isPizza ? (
+            <>
+              <PizzaFilters />
+              <ul class="grid-pizzas">
+                {PIZZAS.map((p) => (
+                  <li>
+                    <PizzaCard pizza={p} headingLevel="h2" />
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <ul class="grid-items">
+              {cat!.items.map((it) => (
+                <li>
+                  <ItemCard item={it} category={cat!.slug} headingLevel="h2" />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        {(isPizza || categorie === 'menus') && <OfferBanner />}
+      </div>
+    </section>
+
+    <section class="container cat-seo" aria-labelledby="seo-title">
+      <div class="cat-seo__text">
+        <h2 id="seo-title" class="h-3">{seo.h}</h2>
+        {seo.p.map((p) => <p class="muted">{p}</p>)}
+      </div>
+      <nav class="cat-seo__more" aria-label="Autres catégories">
+        <p class="eyebrow">Continuer sur la carte</p>
+        <ul>
+          {
+            others.map((c) => (
+              <li>
+                <a href={`/carte/${c.slug}/`}>
+                  <span aria-hidden="true">{c.emoji}</span> {c.name}
+                  <Icon name="arrow" size={18} />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .cat-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .cat-hero__art {
+    width: min(100%, 440px);
+    filter: drop-shadow(0 40px 40px rgba(0, 0, 0, 0.5));
+    animation: floaty 6s ease-in-out infinite;
+  }
+  .cat-hero__art--spin {
+    animation: slowspin 50s linear infinite;
+  }
+  @keyframes slowspin {
+    to {
+      rotate: 360deg;
+    }
+  }
+  @keyframes floaty {
+    50% {
+      translate: 0 -14px;
+      rotate: -4deg;
+    }
+  }
+  .cat-page {
+    padding-bottom: clamp(60px, 8vw, 120px);
+  }
+  .cat-page__list {
+    padding-top: clamp(40px, 5vw, 64px);
+  }
+  .cat-seo {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: clamp(32px, 6vw, 90px);
+    margin-top: clamp(64px, 8vw, 110px);
+    padding-top: clamp(40px, 5vw, 64px);
+    border-top: 1px solid var(--line-light);
+  }
+  .cat-seo__text {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+  .cat-seo__more ul {
+    display: grid;
+    margin-top: 14px;
+  }
+  .cat-seo__more a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-light);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+    transition:
+      color 0.2s,
+      padding 0.4s var(--ease-out);
+  }
+  .cat-seo__more a :global(svg) {
+    margin-left: auto;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .cat-seo__more a:hover {
+    color: var(--tomato-2);
+    padding-left: 8px;
+  }
+  .cat-seo__more a:hover :global(svg) {
+    transform: translateX(4px);
+  }
+  @media (max-width: 800px) {
+    .cat-seo {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,141 @@
+---
+/**
+ * En-tête des pages internes : fil d'Ariane + titre + intro + visuel optionnel (slot "art").
+ */
+import Icon from './Icon.astro';
+
+interface Props {
+  crumbs: Array<{ name: string; path: string }>;
+  eyebrow?: string;
+  title: string;
+  titleAccent?: string;
+  intro?: string;
+  compact?: boolean;
+}
+const { crumbs, eyebrow, title, titleAccent, intro, compact = false } = Astro.props;
+const hasArt = Astro.slots.has('art');
+---
+
+<section class:list={['phero', { 'phero--compact': compact, 'phero--art': hasArt }]}>
+  <div class="phero__glow" aria-hidden="true"></div>
+  <div class="container phero__grid">
+    <div class="phero__text">
+      <nav aria-label="Fil d'Ariane" class="crumbs" data-reveal>
+        <ol>
+          {
+            crumbs.map((c, i) => (
+              <li>
+                {i < crumbs.length - 1 ? (
+                  <>
+                    <a href={c.path}>{c.name}</a>
+                    <Icon name="arrow" size={14} />
+                  </>
+                ) : (
+                  <span aria-current="page">{c.name}</span>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+      {eyebrow && <span class="eyebrow" data-reveal>{eyebrow}</span>}
+      <h1 class="h-1 phero__title" data-split data-split-now>
+        {title}
+        {titleAccent && <span class="serif text-saffron">{titleAccent}</span>}
+      </h1>
+      {intro && <p class="lead muted phero__intro" data-reveal data-delay="0.2">{intro}</p>}
+      <slot />
+    </div>
+    {
+      hasArt && (
+        <div class="phero__art" data-reveal data-delay="0.15">
+          <slot name="art" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .phero {
+    position: relative;
+    padding-top: calc(var(--header-h) + clamp(40px, 7vw, 90px));
+    padding-bottom: clamp(56px, 8vw, 110px);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .phero--compact {
+    padding-bottom: clamp(32px, 5vw, 60px);
+  }
+  .phero__glow {
+    position: absolute;
+    z-index: -1;
+    width: 70vw;
+    height: 70vw;
+    right: -25vw;
+    top: -30vw;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 77, 31, 0.32), transparent 62%);
+    filter: blur(40px);
+  }
+  .phero__grid {
+    display: grid;
+    gap: 40px;
+    align-items: center;
+  }
+  .phero--art .phero__grid {
+    grid-template-columns: 1.15fr 1fr;
+  }
+  .phero__text {
+    display: grid;
+    gap: 22px;
+    justify-items: start;
+  }
+  .phero__title {
+    max-width: 16ch;
+  }
+  .phero__title .serif {
+    display: inline;
+  }
+  .phero__intro {
+    max-width: 58ch;
+  }
+  .phero__art {
+    display: grid;
+    place-items: center;
+    width: 100%;
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted-on-dark);
+  }
+  .crumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .crumbs a:hover {
+    color: var(--cream);
+  }
+  .crumbs :global(svg) {
+    opacity: 0.5;
+  }
+  .crumbs [aria-current] {
+    color: var(--cream);
+  }
+  @media (max-width: 900px) {
+    .phero--art .phero__grid {
+      grid-template-columns: 1fr;
+    }
+    .phero__art {
+      order: -1;
+      width: min(100%, 300px);
+      margin-inline: auto;
+    }
+  }
+</style>

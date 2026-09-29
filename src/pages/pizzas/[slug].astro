@@ -1,0 +1,487 @@
+---
+import Base from '../../layouts/Base.astro';
+import PizzaCard from '../../components/PizzaCard.astro';
+import OfferBanner from '../../components/OfferBanner.astro';
+import Icon from '../../components/Icon.astro';
+import { PIZZAS, SIZES, BASES, TAGS, minPrice, type Pizza } from '../../data/menu';
+import { SITE, telHref, formatPrice } from '../../data/site';
+import { breadcrumbSchema, pizzaMenuItem } from '../../lib/schema';
+import { pizzaArt } from '../../lib/pizzaArt';
+
+export function getStaticPaths() {
+  return PIZZAS.map((p) => ({ params: { slug: p.slug }, props: { pizza: p } }));
+}
+
+const { pizza } = Astro.props as { pizza: Pizza };
+const city = SITE.address.city;
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'La carte', path: '/carte/' },
+  { name: 'Pizzas', path: '/carte/pizzas/' },
+  { name: `Pizza ${pizza.name}`, path: `/pizzas/${pizza.slug}/` },
+];
+const sizes = SIZES.filter((s) => pizza.prices[s.key] != null);
+const excluded = SITE.offer.conditions.toLowerCase().includes(pizza.name.toLowerCase());
+
+// Suggestions : même base en priorité, puis les autres
+const related = [...PIZZAS.filter((p) => p.slug !== pizza.slug && p.base === pizza.base), ...PIZZAS.filter((p) => p.slug !== pizza.slug && p.base !== pizza.base)].slice(0, 3);
+const idx = PIZZAS.findIndex((p) => p.slug === pizza.slug);
+const prev = PIZZAS[(idx - 1 + PIZZAS.length) % PIZZAS.length];
+const next = PIZZAS[(idx + 1) % PIZZAS.length];
+
+const sizeList = sizes.map((s) => s.label).join(', ').replace(/, ([^,]*)$/, ' et $1');
+const infoText = `Préparée à la commande sur notre pâte fraîche du jour, la pizza ${pizza.name} est disponible en taille ${sizeList}. Livraison gratuite à ${city} et dans un rayon de ${SITE.delivery.radiusKm} km, dès ${SITE.delivery.minOrder} € de commande.`;
+
+const title = `Pizza ${pizza.name} à ${city}`;
+// description ≤ 158 caractères : on retire des ingrédients si nécessaire
+const tail = ` Dès ${formatPrice(minPrice(pizza))}, livrée à ${city} (${SITE.delivery.radiusKm} km offerts).`;
+let ings = pizza.ingredients.filter((i) => !/origan/i.test(i));
+let description = `Pizza ${pizza.name} : ${ings.join(', ').toLowerCase()}.${tail}`;
+while (description.length > 158 && ings.length > 2) {
+  ings = ings.slice(0, -1);
+  description = `Pizza ${pizza.name} : ${ings.join(', ').toLowerCase()}…${tail}`;
+}
+---
+
+<Base
+  title={title}
+  description={description}
+  image={`/og/pizza-${pizza.slug}.jpg`}
+  imageAlt={`Pizza ${pizza.name} — ${SITE.name}`}
+  jsonLd={[breadcrumbSchema(crumbs), { '@context': 'https://schema.org', ...pizzaMenuItem(pizza) }]}
+>
+  <section class="pz-hero">
+    <div class="pz-hero__glow" aria-hidden="true"></div>
+    <div class="container pz-hero__grid">
+      <div class="pz-hero__text">
+        <nav aria-label="Fil d'Ariane" class="crumbs" data-reveal>
+          <ol>
+            {
+              crumbs.map((c, i) => (
+                <li>
+                  {i < crumbs.length - 1 ? (
+                    <>
+                      <a href={c.path}>{c.name}</a>
+                      <Icon name="arrow" size={14} />
+                    </>
+                  ) : (
+                    <span aria-current="page">{c.name}</span>
+                  )}
+                </li>
+              ))
+            }
+          </ol>
+        </nav>
+
+        <div class="pz-hero__tags" data-reveal>
+          <span class="tag tag--ink">{BASES[pizza.base]}</span>
+          {pizza.tags?.map((t) => <span class={`tag tag--${TAGS[t].color}`}>{TAGS[t].label}</span>)}
+        </div>
+
+        <h1 class="pz-hero__title" data-split data-split-now>
+          Pizza <span class="serif text-saffron">{pizza.name}</span>
+        </h1>
+        <p class="lead pz-hero__pitch" data-reveal data-delay="0.2">{pizza.pitch}</p>
+
+        <div data-reveal data-delay="0.3">
+          <h2 class="pz-hero__label">Ingrédients</h2>
+          <ul class="pz-ings">
+            {pizza.ingredients.map((ing) => <li>{ing}</li>)}
+          </ul>
+        </div>
+
+        <div data-reveal data-delay="0.4">
+          <h2 class="pz-hero__label">Choisissez votre taille</h2>
+          <div class="pz-sizes">
+            {
+              sizes.map((s) => (
+                <button
+                  type="button"
+                  class="pz-size"
+                  data-add
+                  data-id={`${pizza.slug}:${s.key}`}
+                  data-name={`Pizza ${pizza.name}`}
+                  data-size-label={s.label}
+                  data-price={pizza.prices[s.key]}
+                  data-offer={s.key !== 'junior' && !excluded ? '1' : '0'}
+                >
+                  <span class="pz-size__label">{s.label}</span>
+                  <span class="pz-size__price">{formatPrice(pizza.prices[s.key]!)}</span>
+                  <span class="pz-size__add">
+                    <Icon name="plus" size={16} /> Ajouter
+                  </span>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="pz-hero__ctas" data-reveal data-delay="0.5">
+          <a href={telHref} class="btn btn--lg" data-magnetic><Icon name="phone" /> Commander au {SITE.phone}</a>
+          <button type="button" class="btn btn--lg btn--ghost" data-cart-open><Icon name="bag" /> Voir mon panier</button>
+        </div>
+      </div>
+
+      <div class="pz-stage" data-pz-stage aria-hidden="true">
+        <div class="pz-stage__board"></div>
+        <div class="pz-stage__pizza" data-pz-pizza set:html={pizzaArt(pizza)} />
+        <div class="pz-stage__shadow"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="on-light pz-body">
+    <section class="container pz-info" aria-labelledby="prices-title">
+      <div>
+        <span class="eyebrow">Tailles & prix</span>
+        <h2 id="prices-title" class="h-2">La {pizza.name}, <span class="serif">à votre faim.</span></h2>
+        <p class="muted">{infoText}</p>
+      </div>
+      <table class="pz-table">
+        <caption class="sr-only">Prix de la pizza {pizza.name} selon la taille</caption>
+        <thead>
+          <tr><th scope="col">Taille</th><th scope="col">Prix</th></tr>
+        </thead>
+        <tbody>
+          {
+            sizes.map((s) => (
+              <tr>
+                <th scope="row">Pizza {pizza.name} {s.label}</th>
+                <td class="price">{formatPrice(pizza.prices[s.key]!)}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </section>
+
+    {!excluded && <div class="container"><OfferBanner /></div>}
+
+    <section class="container pz-related" aria-labelledby="related-title">
+      <div class="pz-related__head">
+        <h2 id="related-title" class="h-2">Vous aimerez <span class="serif">aussi</span></h2>
+        <a href="/carte/pizzas/" class="btn btn--ghost">Toutes les pizzas <Icon name="arrow" /></a>
+      </div>
+      <ul class="grid-pizzas">
+        {related.map((p) => <li><PizzaCard pizza={p} /></li>)}
+      </ul>
+      <nav class="pz-pager" aria-label="Pizza précédente et suivante">
+        <a href={`/pizzas/${prev.slug}/`} rel="prev"><span>← Précédente</span><strong>Pizza {prev.name}</strong></a>
+        <a href={`/pizzas/${next.slug}/`} rel="next"><span>Suivante →</span><strong>Pizza {next.name}</strong></a>
+      </nav>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .pz-hero {
+    position: relative;
+    padding-top: calc(var(--header-h) + clamp(32px, 5vw, 64px));
+    padding-bottom: clamp(56px, 7vw, 100px);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .pz-hero__glow {
+    position: absolute;
+    z-index: -1;
+    width: 60vw;
+    height: 60vw;
+    right: -15vw;
+    top: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 77, 31, 0.38), transparent 62%);
+    filter: blur(50px);
+  }
+  .pz-hero__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+  .pz-hero__text {
+    display: grid;
+    gap: 22px;
+    justify-items: start;
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted-on-dark);
+  }
+  .crumbs li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .crumbs a:hover,
+  .crumbs [aria-current] {
+    color: var(--cream);
+  }
+  .crumbs :global(svg) {
+    opacity: 0.5;
+  }
+  .pz-hero__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pz-hero__tags .tag--ink {
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .pz-hero__title {
+    font-size: clamp(3.2rem, 8vw, 7rem);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+  }
+  .pz-hero__pitch {
+    max-width: 46ch;
+    color: var(--muted-on-dark);
+  }
+  .pz-hero__label {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--saffron);
+    margin-bottom: 12px;
+  }
+  .pz-ings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pz-ings li {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255, 246, 234, 0.07);
+    border: 1px solid var(--line-dark);
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .pz-sizes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 150px));
+    gap: 10px;
+  }
+  .pz-size {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+    padding: 14px 16px;
+    border-radius: 20px;
+    background: rgba(255, 246, 234, 0.06);
+    border: 1.5px solid var(--line-dark);
+    text-align: left;
+    transition:
+      border-color 0.25s,
+      background-color 0.25s,
+      transform 0.3s var(--ease-spring);
+  }
+  .pz-size:hover {
+    border-color: var(--tomato);
+    background: rgba(255, 77, 31, 0.12);
+  }
+  .pz-size:active {
+    transform: scale(0.96);
+  }
+  .pz-size__label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted-on-dark);
+  }
+  .pz-size__price {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .pz-size__add {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    padding: 5px 10px 5px 7px;
+    border-radius: 999px;
+    background: var(--tomato);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .pz-size:global(.is-added) .pz-size__add {
+    background: var(--basil);
+  }
+  .pz-hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .pz-stage {
+    position: relative;
+    aspect-ratio: 1;
+    perspective: 1200px;
+    display: grid;
+    place-items: center;
+  }
+  .pz-stage__board {
+    position: absolute;
+    inset: 4%;
+    border-radius: 50%;
+    background:
+      repeating-radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 9px),
+      radial-gradient(circle, #8b5a2b, #5e3a1a);
+    transform: rotateX(var(--tilt, 0deg)) translateZ(-30px);
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
+  }
+  .pz-stage__pizza {
+    position: relative;
+    width: 84%;
+    transform: rotateX(var(--tilt, 0deg)) rotateZ(var(--spin, 0deg));
+    filter: drop-shadow(0 22px 24px rgba(0, 0, 0, 0.5));
+  }
+  .pz-stage__shadow {
+    display: none;
+  }
+
+  .pz-body {
+    padding-block: clamp(64px, 8vw, 120px);
+  }
+  .pz-info {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(32px, 6vw, 90px);
+    align-items: center;
+  }
+  .pz-info > div {
+    display: grid;
+    gap: 18px;
+  }
+  .pz-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+  }
+  .pz-table th,
+  .pz-table td {
+    padding: 18px 22px;
+    text-align: left;
+    border-bottom: 1px solid var(--line-light);
+  }
+  .pz-table thead th {
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .pz-table td {
+    text-align: right;
+    font-size: 1.3rem;
+  }
+  .pz-table tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+  .pz-related {
+    margin-top: clamp(64px, 8vw, 110px);
+  }
+  .pz-related__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: end;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .pz-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 40px;
+  }
+  .pz-pager a {
+    display: grid;
+    gap: 4px;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--line-light);
+    transition:
+      border-color 0.25s,
+      background-color 0.25s;
+  }
+  .pz-pager a:hover {
+    border-color: var(--ink);
+    background: #fff;
+  }
+  .pz-pager a[rel='next'] {
+    text-align: right;
+  }
+  .pz-pager span {
+    font-size: 0.85rem;
+    color: var(--muted-on-light);
+    font-weight: 600;
+  }
+  .pz-pager strong {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+  }
+  @media (max-width: 900px) {
+    .pz-hero__grid,
+    .pz-info {
+      grid-template-columns: 1fr;
+    }
+    .pz-stage {
+      order: -1;
+      width: min(100%, 420px);
+      margin-inline: auto;
+    }
+  }
+  @media (max-width: 480px) {
+    .pz-sizes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .pz-size {
+      padding: 12px 10px;
+    }
+    .pz-size__price {
+      font-size: 1.25rem;
+    }
+  }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger } from '../../scripts/motion';
+  const stage = document.querySelector<HTMLElement>('[data-pz-stage]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (stage && !reduce) {
+    const state = { tilt: 0, spin: 0 };
+    const apply = () => {
+      stage.style.setProperty('--tilt', `${state.tilt}deg`);
+      stage.style.setProperty('--spin', `${state.spin}deg`);
+    };
+    // rotation continue + inclinaison 3D au scroll
+    gsap.to(state, { spin: 360, duration: 60, repeat: -1, ease: 'none', onUpdate: apply });
+    gsap.fromTo(
+      state,
+      { tilt: 0 },
+      {
+        tilt: 58,
+        ease: 'none',
+        onUpdate: apply,
+        scrollTrigger: { trigger: stage, start: 'top 20%', end: 'bottom top', scrub: true },
+      },
+    );
+    ScrollTrigger.refresh();
+  }
+</script>

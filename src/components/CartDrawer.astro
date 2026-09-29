@@ -1,0 +1,400 @@
+---
+import Icon from './Icon.astro';
+import { SITE, telHref } from '../data/site';
+---
+
+<div class="cart" data-cart hidden>
+  <div class="cart__overlay" data-cart-close></div>
+  <aside class="cart__panel on-light" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
+    <header class="cart__head">
+      <h2 id="cart-title">Votre commande</h2>
+      <button type="button" class="cart__close" data-cart-close aria-label="Fermer le panier"><Icon name="x" /></button>
+    </header>
+
+    <div class="cart__offer" data-cart-offer>
+      <Icon name="gift" size={20} />
+      <p><strong>{SITE.offer.title}</strong> <span>{SITE.offer.conditions}</span></p>
+    </div>
+
+    <div class="cart__body" data-lenis-prevent>
+      <ul class="cart__list" data-cart-list></ul>
+      <div class="cart__empty" data-cart-empty>
+        <div class="cart__empty-art" aria-hidden="true">🍕</div>
+        <p><strong>Votre panier est vide.</strong></p>
+        <p class="muted">Ajoutez vos pizzas préférées depuis la carte.</p>
+        <a href="/carte/" class="btn btn--sm">Voir la carte</a>
+      </div>
+    </div>
+
+    <footer class="cart__foot" data-cart-foot>
+      <fieldset class="cart__mode">
+        <legend class="sr-only">Mode de retrait</legend>
+        <label><input type="radio" name="cart-mode" value="livraison" checked /> <span><Icon name="bike" size={18} /> Livraison</span></label>
+        <label><input type="radio" name="cart-mode" value="emporter" /> <span><Icon name="store" size={18} /> À emporter</span></label>
+      </fieldset>
+      <dl class="cart__totals">
+        <div><dt>Sous-total</dt><dd data-cart-subtotal>0,00 €</dd></div>
+        <div class="cart__discount" data-cart-discount-row hidden><dt>Offre 3e pizza offerte</dt><dd data-cart-discount>0,00 €</dd></div>
+        <div class="cart__total"><dt>Total</dt><dd data-cart-total>0,00 €</dd></div>
+      </dl>
+      <p class="cart__min" data-cart-min hidden>Minimum de commande en livraison : {SITE.delivery.minOrder} €</p>
+      <a href={telHref} class="btn btn--lg cart__call" data-cart-call><Icon name="phone" /> Commander au {SITE.phone}</a>
+      <button type="button" class="btn btn--ghost btn--sm cart__copy" data-cart-copy><Icon name="copy" size={18} /> Copier le récapitulatif</button>
+      <p class="cart__note">Total indicatif. Votre commande est confirmée par téléphone.</p>
+    </footer>
+  </aside>
+</div>
+
+<button type="button" class="cart-fab" data-cart-open data-cart-fab aria-label="Voir mon panier">
+  <span class="cart-fab__icon"><Icon name="bag" size={20} /><span class="cart-fab__count" data-cart-count>0</span></span>
+  <span class="cart-fab__label">Mon panier</span>
+  <span class="cart-fab__total" data-cart-fab-total>0,00 €</span>
+</button>
+
+<div class="toast" data-toast role="status" aria-live="polite"></div>
+
+<style>
+  .cart {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+  }
+  .cart__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 5, 4, 0.6);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .cart.is-open .cart__overlay {
+    opacity: 1;
+  }
+  .cart__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(460px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--cream);
+    color: var(--text-on-light);
+    color-scheme: light;
+    transform: translateX(100%);
+    transition: transform 0.55s var(--ease-out);
+    box-shadow: -30px 0 80px rgba(0, 0, 0, 0.4);
+  }
+  .cart.is-open .cart__panel {
+    transform: none;
+  }
+  .cart__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--line-light);
+  }
+  .cart__head h2 {
+    font-size: 1.7rem;
+  }
+  .cart__close {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(27, 19, 16, 0.06);
+  }
+  .cart__close:hover {
+    background: rgba(27, 19, 16, 0.12);
+  }
+  .cart__offer {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin: 16px 24px 0;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+  .cart__offer :global(svg) {
+    flex: none;
+    color: var(--saffron);
+    margin-top: 1px;
+  }
+  .cart__offer span {
+    display: block;
+    color: var(--muted-on-dark);
+    font-size: 0.8rem;
+  }
+  .cart__body {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 24px;
+  }
+  .cart__list :global(li) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-light);
+  }
+  .cart__list :global(.ci-name) {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .cart__list :global(.ci-size) {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted-on-light);
+    letter-spacing: 0;
+  }
+  .cart__list :global(.ci-price) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-align: right;
+  }
+  .cart__list :global(.ci-free) {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--basil-2);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .cart__list :global(.ci-qty) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(27, 19, 16, 0.06);
+    width: max-content;
+  }
+  .cart__list :global(.ci-qty button) {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  .cart__list :global(.ci-qty span) {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 800;
+  }
+  .cart__list :global(.ci-remove) {
+    font-size: 0.8rem;
+    color: var(--muted-on-light);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    justify-self: end;
+    align-self: center;
+  }
+  .cart__empty {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 48px 0;
+    text-align: center;
+  }
+  .cart__empty-art {
+    font-size: 4rem;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    50% {
+      transform: translateY(-10px) rotate(8deg);
+    }
+  }
+  .cart__empty .btn {
+    margin-top: 12px;
+  }
+  .cart__foot {
+    display: grid;
+    gap: 12px;
+    padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line-light);
+    background: #fff9f0;
+  }
+  .cart__mode {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 5px;
+    margin: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(27, 19, 16, 0.07);
+  }
+  .cart__mode label {
+    position: relative;
+    cursor: pointer;
+  }
+  .cart__mode input {
+    position: absolute;
+    opacity: 0;
+  }
+  .cart__mode span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    transition: background-color 0.25s;
+  }
+  .cart__mode input:checked + span {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  .cart__mode input:focus-visible + span {
+    outline: 3px solid var(--saffron);
+  }
+  .cart__totals {
+    display: grid;
+    gap: 6px;
+    margin: 4px 0 0;
+  }
+  .cart__totals div {
+    display: flex;
+    justify-content: space-between;
+  }
+  .cart__totals dd {
+    margin: 0;
+    font-weight: 700;
+  }
+  .cart__discount dd {
+    color: var(--basil-2);
+  }
+  .cart__total {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .cart__min {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--tomato-2);
+  }
+  .cart__call {
+    width: 100%;
+  }
+  .cart__copy {
+    width: 100%;
+  }
+  .cart__note {
+    font-size: 0.78rem;
+    color: var(--muted-on-light);
+    text-align: center;
+  }
+
+  .cart-fab {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 150;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 20px 8px 8px;
+    border-radius: 999px;
+    background: var(--tomato);
+    color: #fff;
+    font-weight: 700;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 18px 40px -10px rgba(255, 77, 31, 0.6);
+    transform: translateY(calc(100% + 40px));
+    transition: transform 0.6s var(--ease-spring);
+  }
+  .cart-fab.is-visible {
+    transform: none;
+  }
+  .cart-fab:hover {
+    transform: translateY(-3px);
+  }
+  .cart-fab__icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .cart-fab__count {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--saffron);
+    color: var(--ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+  .cart-fab__total {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.35);
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 88px;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: var(--cream);
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
+    transform: translate(-50%, calc(100% + 48px));
+    visibility: hidden;
+    transition:
+      transform 0.5s var(--ease-spring),
+      visibility 0s 0.5s;
+    pointer-events: none;
+    white-space: nowrap;
+    max-width: calc(100vw - 32px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .toast.is-visible {
+    transform: translate(-50%, 0);
+    visibility: visible;
+    transition:
+      transform 0.5s var(--ease-spring),
+      visibility 0s;
+  }
+</style>
+
+<script>
+  import { initCart } from '../scripts/cart';
+  initCart();
+</script>

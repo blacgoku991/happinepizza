@@ -1,0 +1,282 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { SITE, NAV, telHref, mapsUrl } from '../data/site';
+import { ALL_CATEGORIES, PIZZAS } from '../data/menu';
+
+const socials = Object.entries(SITE.social).filter(([, url]) => url) as Array<[keyof typeof SITE.social, string]>;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-cta">
+    <div class="container footer-cta__inner">
+      <p class="footer-cta__title" data-split>
+        Une petite faim ? <span class="serif text-saffron">On arrive.</span>
+      </p>
+      <div class="footer-cta__actions" data-reveal>
+        <a href={telHref} class="btn btn--lg btn--saffron" data-magnetic><Icon name="phone" /> {SITE.phone}</a>
+        <a href="/carte/" class="btn btn--lg btn--ghost">Voir la carte <Icon name="arrow" /></a>
+      </div>
+    </div>
+    <div class="marquee footer-marquee" aria-hidden="true" style="--duration: 40s">
+      {
+        [0, 1].map(() => (
+          <div class="marquee__track">
+            <span>Happiness</span>
+            <Icon name="star" size={40} />
+            <span class="serif">Pizza</span>
+            <Icon name="star" size={40} />
+            <span>Happiness</span>
+            <Icon name="star" size={40} />
+            <span class="serif">Pizza</span>
+            <Icon name="star" size={40} />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="/" aria-label={`${SITE.name} — accueil`}><Logo size="md" /></a>
+      <p class="muted">
+        Pizzeria artisanale à {SITE.address.city} ({SITE.address.postalCode}). Pâte fraîche du jour, ingrédients soigneusement
+        sélectionnés, en livraison, à emporter ou sur place.
+      </p>
+      {
+        socials.length > 0 && (
+          <ul class="footer-socials">
+            {socials.map(([name, url]) => (
+              <li>
+                <a href={url} target="_blank" rel="noopener me" aria-label={name}>
+                  <Icon name={name === 'google' ? 'star' : name} size={20} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+
+    <div>
+      <h2 class="footer-title">La carte</h2>
+      <ul class="footer-links">
+        {ALL_CATEGORIES.map((c) => <li><a href={`/carte/${c.slug}/`}>{c.name}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">Nos pizzas</h2>
+      <ul class="footer-links">
+        {PIZZAS.slice(0, 8).map((p) => <li><a href={`/pizzas/${p.slug}/`}>Pizza {p.name}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">Horaires</h2>
+      <ul class="footer-hours">
+        {
+          SITE.hours.map((d) => (
+            <li>
+              <span>{d.day}</span>
+              <span>{d.slots.length ? d.slots.map(([a, b]) => `${a.replace(':', 'h')}–${b.replace(':', 'h')}`).join(' · ') : 'Fermé'}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">Nous trouver</h2>
+      <address class="footer-address">
+        <a href={mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</a>
+        <a href={telHref}><Icon name="phone" size={18} /> {SITE.phone}</a>
+        {SITE.email && <a href={`mailto:${SITE.email}`}>{SITE.email}</a>}
+      </address>
+      <ul class="footer-links footer-links--compact">
+        {NAV.filter((n) => !n.href.startsWith('/carte')).map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>© {year} {SITE.name} — {SITE.address.city}. Tous droits réservés.</p>
+    <ul>
+      <li><a href="/mentions-legales/">Mentions légales</a></li>
+      <li><a href="/mentions-legales/#confidentialite">Confidentialité</a></li>
+      <li><a href="/sitemap-index.xml">Plan du site</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    background: var(--ink);
+    border-top: 1px solid var(--line-dark);
+    overflow: hidden;
+  }
+  .footer-cta {
+    padding-top: clamp(80px, 10vw, 140px);
+  }
+  .footer-cta__inner {
+    display: grid;
+    gap: 36px;
+    justify-items: center;
+    text-align: center;
+  }
+  .footer-cta__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.8rem, 8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+  .footer-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+  }
+  .footer-marquee {
+    margin-top: clamp(60px, 8vw, 110px);
+    padding-block: 18px;
+    color: rgba(255, 246, 234, 0.07);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(4rem, 14vw, 12rem);
+    letter-spacing: -0.05em;
+    line-height: 1;
+  }
+  .footer-marquee .serif {
+    font-weight: 400;
+  }
+  .footer-marquee :global(svg) {
+    color: var(--tomato);
+    opacity: 0.6;
+    flex: none;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(4, 1fr);
+    gap: 40px;
+    padding-block: 56px;
+    border-top: 1px solid var(--line-dark);
+  }
+  .footer-brand {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+  }
+  .footer-brand p {
+    font-size: 0.95rem;
+    max-width: 34ch;
+  }
+  .footer-title {
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--saffron);
+    margin-bottom: 18px;
+    font-weight: 700;
+  }
+  .footer-links {
+    display: grid;
+    gap: 10px;
+    font-size: 0.95rem;
+  }
+  .footer-links a,
+  .footer-address a {
+    color: var(--muted-on-dark);
+    transition: color 0.2s;
+  }
+  .footer-links a:hover,
+  .footer-address a:hover {
+    color: var(--cream);
+  }
+  .footer-links--compact {
+    margin-top: 20px;
+  }
+  .footer-hours {
+    display: grid;
+    gap: 8px;
+    font-size: 0.88rem;
+  }
+  .footer-hours li {
+    display: grid;
+    gap: 2px;
+  }
+  .footer-hours li span:first-child {
+    font-weight: 700;
+  }
+  .footer-hours li span:last-child {
+    color: var(--muted-on-dark);
+  }
+  .footer-address {
+    display: grid;
+    gap: 14px;
+    font-style: normal;
+    font-size: 0.95rem;
+  }
+  .footer-address a {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .footer-address :global(svg) {
+    flex: none;
+    margin-top: 3px;
+    color: var(--tomato);
+  }
+  .footer-socials {
+    display: flex;
+    gap: 10px;
+  }
+  .footer-socials a {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line-dark);
+    transition:
+      background-color 0.25s,
+      color 0.25s;
+  }
+  .footer-socials a:hover {
+    background: var(--cream);
+    color: var(--ink);
+  }
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 24px 32px;
+    border-top: 1px solid var(--line-dark);
+    font-size: 0.85rem;
+    color: var(--muted-on-dark);
+  }
+  .footer-bottom ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .footer-bottom a:hover {
+    color: var(--cream);
+  }
+  @media (max-width: 1100px) {
+    .footer-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 520px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

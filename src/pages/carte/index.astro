@@ -1,0 +1,110 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import CategoryNav from '../../components/CategoryNav.astro';
+import PizzaCard from '../../components/PizzaCard.astro';
+import ItemCard from '../../components/ItemCard.astro';
+import PizzaFilters from '../../components/PizzaFilters.astro';
+import OfferBanner from '../../components/OfferBanner.astro';
+import { PIZZAS, CATEGORIES, PIZZA_CATEGORY } from '../../data/menu';
+import { SITE } from '../../data/site';
+import { menuSchema, breadcrumbSchema } from '../../lib/schema';
+
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'La carte', path: '/carte/' },
+];
+---
+
+<Base
+  title="La carte – Pizzas, menus & desserts"
+  description={`La carte ${SITE.name} : ${PIZZAS.length} pizzas en 3 tailles, menus, pâtes, salades, paninis, desserts et boissons. Livraison gratuite à ${SITE.address.city}.`}
+  type="restaurant.menu"
+  jsonLd={[menuSchema(), breadcrumbSchema(crumbs)]}
+>
+  <PageHero
+    crumbs={crumbs}
+    eyebrow="La carte"
+    title="Notre carte,"
+    titleAccent=" faite pour partager."
+    intro={`${PIZZAS.length} pizzas artisanales en trois tailles, des menus malins, des pâtes gratinées, des salades fraîches et des desserts gourmands. Composez votre panier, puis appelez-nous au ${SITE.phone}.`}
+    compact
+  />
+
+  <div class="on-light carte">
+    <CategoryNav mode="anchor" />
+
+    <section id={PIZZA_CATEGORY.slug} class="carte__section" data-filter-scope aria-labelledby="t-pizzas">
+      <div class="container">
+        <header class="carte__head">
+          <div>
+            <span class="eyebrow">{PIZZA_CATEGORY.emoji} Junior · Senior · Méga</span>
+            <h2 id="t-pizzas" class="h-2">Pizzas</h2>
+          </div>
+          <p class="muted">{PIZZA_CATEGORY.intro}</p>
+        </header>
+        <PizzaFilters />
+        <ul class="grid-pizzas">
+          {PIZZAS.map((p) => <li><PizzaCard pizza={p} /></li>)}
+        </ul>
+      </div>
+    </section>
+
+    <div class="container"><OfferBanner /></div>
+
+    {
+      CATEGORIES.map((c) => (
+        <section id={c.slug} class="carte__section" aria-labelledby={`t-${c.slug}`}>
+          <div class="container">
+            <header class="carte__head">
+              <div>
+                <span class="eyebrow">
+                  {c.emoji} {c.items.length} choix
+                </span>
+                <h2 id={`t-${c.slug}`} class="h-2">
+                  <a href={`/carte/${c.slug}/`}>{c.name}</a>
+                </h2>
+              </div>
+              <p class="muted">{c.intro}</p>
+            </header>
+            <ul class="grid-items">
+              {c.items.map((it) => (
+                <li>
+                  <ItemCard item={it} category={c.slug} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</Base>
+
+<style>
+  .carte {
+    padding-bottom: clamp(60px, 8vw, 120px);
+  }
+  .carte__section {
+    padding-top: clamp(56px, 7vw, 96px);
+    scroll-margin-top: calc(var(--header-h) + 70px);
+  }
+  .carte__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px 40px;
+    margin-bottom: 28px;
+  }
+  .carte__head > div {
+    display: grid;
+    gap: 12px;
+  }
+  .carte__head p {
+    max-width: 46ch;
+  }
+  .carte__head h2 a:hover {
+    color: var(--tomato-2);
+  }
+</style>

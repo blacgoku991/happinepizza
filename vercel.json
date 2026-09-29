@@ -1,0 +1,234 @@
+{
+  "trailingSlash": true,
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/home{/}?",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/happiness-pizza{/}?",
+      "destination": "/a-propos/",
+      "permanent": true
+    },
+    {
+      "source": "/contacts-2{/}?",
+      "destination": "/contact/",
+      "permanent": true
+    },
+    {
+      "source": "/boutique{/}?",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/shop{/}?",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/panier{/}?",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/cart{/}?",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/commander{/}?",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/checkout{/}?",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/mon-compte{/}?",
+      "destination": "/contact/",
+      "permanent": true
+    },
+    {
+      "source": "/my-account{/}?",
+      "destination": "/contact/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/pizzas-junior/:path*",
+      "destination": "/carte/pizzas/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/pizzas-senior/:path*",
+      "destination": "/carte/pizzas/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/pizzas-mega/:path*",
+      "destination": "/carte/pizzas/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/pates/:path*",
+      "destination": "/carte/pates/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/salades/:path*",
+      "destination": "/carte/salades/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/paninis/:path*",
+      "destination": "/carte/paninis/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/desserts/:path*",
+      "destination": "/carte/desserts/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/boissons/:path*",
+      "destination": "/carte/boissons/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/offres/:path*",
+      "destination": "/carte/menus/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/tex-mex/:path*",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/hot-bread/:path*",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-reine{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/reine/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-calzone{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/calzone/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-campione{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/campione/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-bresilienne{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/bresilienne/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-chicken{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/chicken/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-fermiere{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/fermiere/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-barbecue{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/barbecue/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-boursin{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/boursin/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-burger{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/burger/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-chilly{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/chilly/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-british{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/british/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-4-fromages{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/4-fromages/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-chevre-miel{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/chevre-miel/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-salmone{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/salmone/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/pizza-au-choix{-junior}?{-senior}?{-mega}?{/}?",
+      "destination": "/pizzas/au-choix/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/menu-:slug*",
+      "destination": "/carte/menus/",
+      "permanent": true
+    },
+    {
+      "source": "/produit/:path*",
+      "destination": "/carte/",
+      "permanent": true
+    },
+    {
+      "source": "/categorie-produit/:path*",
+      "destination": "/carte/",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/_astro/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
+    }
+  ]
+}

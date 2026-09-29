@@ -1,0 +1,124 @@
+---
+import '../styles/global.css';
+import bricolage from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url';
+import manrope from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
+import instrumentItalic from '@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CartDrawer from '../components/CartDrawer.astro';
+import { SITE } from '../data/site';
+import { restaurantSchema, websiteSchema } from '../lib/schema';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Image Open Graph (chemin absolu depuis /public). */
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article' | 'restaurant.menu';
+  jsonLd?: object[];
+  noindex?: boolean;
+  /** Titre exact (sans suffixe de marque). */
+  rawTitle?: boolean;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  image = '/og/og-default.jpg',
+  imageAlt = `${SITE.name} — pizzeria artisanale à ${SITE.address.city}`,
+  type = 'website',
+  jsonLd = [],
+  noindex = false,
+  rawTitle = false,
+  bodyClass = '',
+} = Astro.props;
+
+const fullTitle = rawTitle ? title : `${title} | ${SITE.name}`;
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const ogImage = new URL(image, SITE.url).href;
+const schemas = [restaurantSchema(), websiteSchema(), ...jsonLd];
+---
+
+<!doctype html>
+<html lang="fr" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Polices auto-hébergées (RGPD + performance) -->
+    <link rel="preload" href={bricolage} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={manrope} as="font" type="font/woff2" crossorigin />
+    <style set:html={`
+      @font-face{font-family:'Bricolage Grotesque Variable';font-style:normal;font-display:swap;font-weight:200 800;src:url(${bricolage}) format('woff2-variations');}
+      @font-face{font-family:'Manrope Variable';font-style:normal;font-display:swap;font-weight:200 800;src:url(${manrope}) format('woff2-variations');}
+      @font-face{font-family:'Instrument Serif';font-style:italic;font-display:swap;font-weight:400;src:url(${instrumentItalic}) format('woff2');}
+    `} />
+
+    <!-- Icônes & PWA -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#120c0a" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="format-detection" content="telephone=yes" />
+
+    <!-- Open Graph / réseaux sociaux -->
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- SEO local -->
+    <meta name="geo.region" content="FR-77" />
+    <meta name="geo.placename" content={SITE.address.city} />
+    <meta name="geo.position" content={`${SITE.geo.lat};${SITE.geo.lng}`} />
+    <meta name="ICBM" content={`${SITE.geo.lat}, ${SITE.geo.lng}`} />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {schemas.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('js-motion');
+        d.classList.add('js');
+        // filet de sécurité : si le JS d'animation échoue, on révèle tout
+        setTimeout(function () {
+          if (!d.classList.contains('motion-ready')) d.classList.remove('js-motion');
+        }, 3500);
+      })();
+    </script>
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer />
+    <CartDrawer />
+    <script>
+      import '../scripts/motion';
+    </script>
+  </body>
+</html>

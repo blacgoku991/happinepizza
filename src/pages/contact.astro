@@ -1,0 +1,183 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Hours from '../components/Hours.astro';
+import Icon from '../components/Icon.astro';
+import { SITE, telHref, mapsUrl, fullAddress } from '../data/site';
+import { breadcrumbSchema } from '../lib/schema';
+
+const crumbs = [
+  { name: 'Accueil', path: '/' },
+  { name: 'Contact', path: '/contact/' },
+];
+const d = 0.012;
+const bbox = [SITE.geo.lng - d * 1.6, SITE.geo.lat - d, SITE.geo.lng + d * 1.6, SITE.geo.lat + d].join(',');
+const osm = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${SITE.geo.lat},${SITE.geo.lng}`;
+---
+
+<Base
+  title={`Contact & accès – ${SITE.address.city}`}
+  description={`Contactez ${SITE.name} au ${SITE.phone}. Adresse : ${fullAddress}. Horaires, plan d'accès et commande par téléphone.`}
+  jsonLd={[
+    breadcrumbSchema(crumbs),
+    { '@context': 'https://schema.org', '@type': 'ContactPage', name: `Contact ${SITE.name}`, url: `${SITE.url}/contact/`, about: { '@id': `${SITE.url}/#restaurant` } },
+  ]}
+>
+  <PageHero crumbs={crumbs} eyebrow="Contact" title="Passez nous voir," titleAccent=" ou appelez-nous." intro="Commandes, questions, grosses tablées : notre équipe vous répond pendant les heures d'ouverture." />
+
+  <section class="section--tight on-light contact">
+    <div class="container contact__grid">
+      <div class="contact__cards">
+        <a href={telHref} class="ccard ccard--phone" data-reveal>
+          <span class="ccard__icon"><Icon name="phone" size={28} /></span>
+          <span class="ccard__label">Téléphone · commandes</span>
+          <strong class="ccard__value">{SITE.phone}</strong>
+          <span class="ccard__cta">Appeler <Icon name="arrow" size={18} /></span>
+        </a>
+        <a href={mapsUrl} target="_blank" rel="noopener" class="ccard" data-reveal data-delay="0.08">
+          <span class="ccard__icon"><Icon name="pin" size={28} /></span>
+          <span class="ccard__label">Adresse</span>
+          <address class="ccard__value">{SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</address>
+          <span class="ccard__cta">Itinéraire <Icon name="arrow-up-right" size={18} /></span>
+        </a>
+        {
+          SITE.email && (
+            <a href={`mailto:${SITE.email}`} class="ccard" data-reveal data-delay="0.16">
+              <span class="ccard__icon">
+                <Icon name="card" size={28} />
+              </span>
+              <span class="ccard__label">E-mail</span>
+              <strong class="ccard__value">{SITE.email}</strong>
+            </a>
+          )
+        }
+        <div class="ccard ccard--info" data-reveal data-delay="0.16">
+          <span class="ccard__label">Services</span>
+          <ul class="ccard__list">
+            {SITE.services.map((s) => <li><Icon name="check" size={18} /> {s}</li>)}
+          </ul>
+          <span class="ccard__label">Paiements acceptés</span>
+          <ul class="ccard__list">
+            {SITE.payments.map((p) => <li><Icon name="check" size={18} /> {p}</li>)}
+          </ul>
+        </div>
+      </div>
+      <div class="contact__side">
+        <div data-reveal><Hours /></div>
+        <div class="contact__map" data-reveal>
+          <iframe title={`Plan d'accès — ${SITE.name}`} src={osm} loading="lazy" referrerpolicy="no-referrer"></iframe>
+          <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn--sm contact__map-btn">Ouvrir dans Google Maps <Icon name="arrow-up-right" size={16} /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact {
+    padding-bottom: clamp(80px, 10vw, 140px);
+  }
+  .contact__grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .contact__cards {
+    display: grid;
+    gap: 16px;
+  }
+  .contact__side {
+    display: grid;
+    gap: 16px;
+  }
+  .ccard {
+    display: grid;
+    gap: 8px;
+    padding: 28px;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+    transition: transform 0.5s var(--ease-out);
+  }
+  a.ccard:hover {
+    transform: translateY(-4px);
+  }
+  .ccard--phone {
+    background: var(--tomato);
+    color: #fff;
+  }
+  .ccard__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--ink);
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+  .ccard--phone .ccard__icon {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .ccard__label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .ccard__value {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 3vw, 2.3rem);
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    font-style: normal;
+  }
+  .ccard__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    margin-top: 6px;
+  }
+  .ccard__list {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .ccard__list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .ccard__list :global(svg) {
+    color: var(--basil);
+  }
+  .contact__map {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--cream-2);
+    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+  }
+  .contact__map iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    filter: saturate(0.9) sepia(0.15);
+  }
+  .contact__map-btn {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+  }
+  @media (max-width: 900px) {
+    .contact__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
