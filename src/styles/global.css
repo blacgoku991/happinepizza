@@ -115,6 +115,9 @@ body::after {
 }
 
 /* ---------- utilitaires ---------- */
+[hidden] {
+  display: none !important;
+}
 .wrap {
   width: min(100% - 2 * var(--gutter), var(--maxw));
   margin-inline: auto;
