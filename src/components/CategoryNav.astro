@@ -9,7 +9,7 @@ const { mode = 'page', current } = Astro.props;
 ---
 
 <nav class="catnav" aria-label="Catégories de la carte" data-catnav={mode}>
-  <div class="container">
+  <div class="wrap">
     <ul class="catnav__list" data-lenis-prevent>
       {
         mode === 'page' && (
@@ -29,7 +29,7 @@ const { mode = 'page', current } = Astro.props;
               aria-current={current === c.slug ? 'page' : undefined}
               data-spy={mode === 'anchor' ? c.slug : undefined}
             >
-              <span aria-hidden="true">{c.emoji}</span> {c.name}
+              {c.name}
             </a>
           </li>
         ))
@@ -44,22 +44,20 @@ const { mode = 'page', current } = Astro.props;
     top: 0;
     z-index: 50;
     padding-block: 12px;
-    background: rgba(255, 246, 234, 0.95);
-    backdrop-filter: blur(16px) saturate(1.3);
-    -webkit-backdrop-filter: blur(16px) saturate(1.3);
-    border-bottom: 1px solid var(--line-light);
-    color: var(--text-on-light);
-    transition: top 0.5s var(--ease-out);
+    background: rgba(10, 8, 7, 0.82);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3);
+    backdrop-filter: blur(18px) saturate(1.3);
+    border-block: 1px solid var(--line);
+    transition: top 0.5s var(--ease);
   }
-  :global(.site-header:not(.is-hidden)) ~ main .catnav {
-    top: var(--header-h);
+  :global(.hdr:not(.hidden)) ~ main .catnav {
+    top: var(--hdr);
   }
   .catnav__list {
     display: flex;
     gap: 6px;
     overflow-x: auto;
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
     padding: 2px;
   }
   .catnav__list::-webkit-scrollbar {
@@ -68,22 +66,23 @@ const { mode = 'page', current } = Astro.props;
   .catnav__link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
+    padding: 10px 17px;
     border-radius: 999px;
-    font-weight: 700;
-    font-size: 0.92rem;
+    border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 14px;
+    color: #cdbfb2;
     white-space: nowrap;
-    transition:
-      background-color 0.25s,
-      color 0.25s;
+    transition: color 0.3s, background 0.3s, border-color 0.3s;
   }
   .catnav__link:hover {
-    background: rgba(27, 19, 16, 0.07);
+    color: #fff;
+    background: rgba(255, 240, 228, 0.06);
   }
   .catnav__link.is-active {
-    background: var(--ink);
-    color: var(--cream);
+    color: var(--text);
+    background: linear-gradient(180deg, rgba(255, 130, 60, 0.2), rgba(255, 90, 31, 0.06));
+    border-color: rgba(255, 140, 70, 0.5);
   }
 </style>
 

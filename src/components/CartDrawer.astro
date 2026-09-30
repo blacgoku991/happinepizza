@@ -5,49 +5,48 @@ import { SITE, telHref } from '../data/site';
 
 <div class="cart" data-cart hidden>
   <div class="cart__overlay" data-cart-close></div>
-  <aside class="cart__panel on-light" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
+  <aside class="cart__panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" tabindex="-1">
     <header class="cart__head">
-      <h2 id="cart-title">Votre commande</h2>
+      <h2 id="cart-title">Votre <em>commande</em></h2>
       <button type="button" class="cart__close" data-cart-close aria-label="Fermer le panier"><Icon name="x" /></button>
     </header>
 
-    <div class="cart__offer" data-cart-offer>
-      <Icon name="gift" size={20} />
-      <p><strong>{SITE.offer.title}</strong> <span>{SITE.offer.conditions}</span></p>
+    <div class="cart__offer">
+      <span class="cart__offer-ic"><Icon name="gift" size={18} /></span>
+      <p><strong>{SITE.offer.title}</strong><span>{SITE.offer.conditions}</span></p>
     </div>
 
     <div class="cart__body" data-lenis-prevent>
       <ul class="cart__list" data-cart-list></ul>
       <div class="cart__empty" data-cart-empty>
-        <div class="cart__empty-art" aria-hidden="true">🍕</div>
-        <p><strong>Votre panier est vide.</strong></p>
-        <p class="muted">Ajoutez vos pizzas préférées depuis la carte.</p>
-        <a href="/carte/" class="btn btn--sm">Voir la carte</a>
+        <p class="cart__empty-t">Votre panier est vide</p>
+        <p>Ajoutez vos pizzas préférées depuis la carte.</p>
+        <a href="/carte/" class="btn btn-glass btn-sm">Voir la carte <Icon name="arrow" size={18} /></a>
       </div>
     </div>
 
     <footer class="cart__foot" data-cart-foot>
       <fieldset class="cart__mode">
         <legend class="sr-only">Mode de retrait</legend>
-        <label><input type="radio" name="cart-mode" value="livraison" checked /> <span><Icon name="bike" size={18} /> Livraison</span></label>
-        <label><input type="radio" name="cart-mode" value="emporter" /> <span><Icon name="store" size={18} /> À emporter</span></label>
+        <label><input type="radio" name="cart-mode" value="livraison" checked /><span><Icon name="scooter" size={18} /> Livraison</span></label>
+        <label><input type="radio" name="cart-mode" value="emporter" /><span><Icon name="store" size={18} /> À emporter</span></label>
       </fieldset>
       <dl class="cart__totals">
         <div><dt>Sous-total</dt><dd data-cart-subtotal>0,00 €</dd></div>
-        <div class="cart__discount" data-cart-discount-row hidden><dt>Offre 3e pizza offerte</dt><dd data-cart-discount>0,00 €</dd></div>
+        <div class="cart__discount" data-cart-discount-row hidden><dt>3<sup>e</sup> pizza offerte</dt><dd data-cart-discount>0,00 €</dd></div>
         <div class="cart__total"><dt>Total</dt><dd data-cart-total>0,00 €</dd></div>
       </dl>
       <p class="cart__min" data-cart-min hidden>Minimum de commande en livraison : {SITE.delivery.minOrder} €</p>
-      <a href={telHref} class="btn btn--lg cart__call" data-cart-call><Icon name="phone" /> Commander au {SITE.phone}</a>
-      <button type="button" class="btn btn--ghost btn--sm cart__copy" data-cart-copy><Icon name="copy" size={18} /> Copier le récapitulatif</button>
-      <p class="cart__note">Total indicatif. Votre commande est confirmée par téléphone.</p>
+      <a href={telHref} class="btn btn-ember cart__call"><Icon name="phone" stroke={2} /> Commander au {SITE.phone}</a>
+      <button type="button" class="btn btn-glass btn-sm cart__copy" data-cart-copy><Icon name="copy" size={18} /> Copier le récapitulatif</button>
+      <p class="cart__note">Total indicatif — la commande est confirmée par téléphone.</p>
     </footer>
   </aside>
 </div>
 
 <button type="button" class="cart-fab" data-cart-open data-cart-fab aria-label="Voir mon panier">
-  <span class="cart-fab__icon"><Icon name="bag" size={20} /><span class="cart-fab__count" data-cart-count>0</span></span>
-  <span class="cart-fab__label">Mon panier</span>
+  <span class="cart-fab__ic"><Icon name="bag" /><span class="cart-fab__n" data-cart-count>0</span></span>
+  <span>Mon panier</span>
   <span class="cart-fab__total" data-cart-fab-total>0,00 €</span>
 </button>
 
@@ -57,17 +56,18 @@ import { SITE, telHref } from '../data/site';
   .cart {
     position: fixed;
     inset: 0;
-    z-index: 200;
+    z-index: 120;
   }
   .cart__overlay {
     position: absolute;
     inset: 0;
-    background: rgba(8, 5, 4, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(5, 3, 2, 0.7);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
     opacity: 0;
     transition: opacity 0.4s;
   }
-  .cart.is-open .cart__overlay {
+  .cart:global(.is-open) .cart__overlay {
     opacity: 1;
   }
   .cart__panel {
@@ -78,14 +78,13 @@ import { SITE, telHref } from '../data/site';
     width: min(460px, 100%);
     display: flex;
     flex-direction: column;
-    background: var(--cream);
-    color: var(--text-on-light);
-    color-scheme: light;
+    background: linear-gradient(180deg, #17110e, #0d0a08);
+    border-left: 1px solid var(--line-2);
+    box-shadow: -40px 0 100px rgba(0, 0, 0, 0.6);
     transform: translateX(100%);
-    transition: transform 0.55s var(--ease-out);
-    box-shadow: -30px 0 80px rgba(0, 0, 0, 0.4);
+    transition: transform 0.55s var(--ease);
   }
-  .cart.is-open .cart__panel {
+  .cart:global(.is-open) .cart__panel {
     transform: none;
   }
   .cart__head {
@@ -93,21 +92,26 @@ import { SITE, telHref } from '../data/site';
     align-items: center;
     justify-content: space-between;
     padding: 22px 24px;
-    border-bottom: 1px solid var(--line-light);
+    border-bottom: 1px solid var(--line);
   }
   .cart__head h2 {
-    font-size: 1.7rem;
+    font: 700 26px/1 var(--display);
+    letter-spacing: -0.035em;
+  }
+  .cart__head em {
+    font: italic 400 1.15em/1 var(--serif);
+    color: var(--ember-2);
   }
   .cart__close {
-    display: grid;
-    place-items: center;
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: rgba(27, 19, 16, 0.06);
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line-2);
   }
   .cart__close:hover {
-    background: rgba(27, 19, 16, 0.12);
+    border-color: rgba(255, 150, 90, 0.5);
   }
   .cart__offer {
     display: flex;
@@ -115,62 +119,65 @@ import { SITE, telHref } from '../data/site';
     align-items: flex-start;
     margin: 16px 24px 0;
     padding: 14px 16px;
-    border-radius: var(--radius-sm);
-    background: var(--ink);
-    color: var(--cream);
-    font-size: 0.88rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255, 120, 50, 0.16), rgba(255, 90, 31, 0.04));
+    border: 1px solid rgba(255, 130, 60, 0.28);
+    font-size: 13px;
     line-height: 1.4;
   }
-  .cart__offer :global(svg) {
+  .cart__offer-ic {
     flex: none;
-    color: var(--saffron);
-    margin-top: 1px;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    background: var(--grad-btn);
+    color: #170903;
+  }
+  .cart__offer strong {
+    display: block;
+    font-size: 14px;
   }
   .cart__offer span {
-    display: block;
-    color: var(--muted-on-dark);
-    font-size: 0.8rem;
+    color: var(--muted);
   }
   .cart__body {
     flex: 1;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 12px 24px;
+    padding: 8px 24px;
   }
   .cart__list :global(li) {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 6px 12px;
+    gap: 8px 12px;
     padding: 16px 0;
-    border-bottom: 1px solid var(--line-light);
+    border-bottom: 1px solid var(--line);
   }
   .cart__list :global(.ci-name) {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.05rem;
+    font: 700 16px/1.2 var(--display);
     letter-spacing: -0.02em;
-    line-height: 1.15;
   }
   .cart__list :global(.ci-size) {
     display: block;
-    font-family: var(--font-body);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--muted-on-light);
+    margin-top: 4px;
+    font: 600 12px/1.3 var(--sans);
+    color: var(--muted);
     letter-spacing: 0;
   }
   .cart__list :global(.ci-price) {
-    font-family: var(--font-display);
-    font-weight: 800;
+    font: 700 16px/1.2 var(--display);
     text-align: right;
+    font-variant-numeric: tabular-nums;
   }
   .cart__list :global(.ci-free) {
     display: block;
-    font-size: 0.72rem;
-    color: var(--basil-2);
-    font-weight: 800;
+    margin-top: 4px;
+    font: 800 10px/1 var(--sans);
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    color: var(--basil);
   }
   .cart__list :global(.ci-qty) {
     display: inline-flex;
@@ -178,17 +185,19 @@ import { SITE, telHref } from '../data/site';
     gap: 4px;
     padding: 4px;
     border-radius: 999px;
-    background: rgba(27, 19, 16, 0.06);
+    border: 1px solid var(--line-2);
     width: max-content;
   }
   .cart__list :global(.ci-qty button) {
-    display: grid;
-    place-items: center;
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 240, 228, 0.06);
+    font-weight: 700;
+  }
+  .cart__list :global(.ci-qty button:hover) {
+    background: var(--grad-btn);
+    color: #170903;
   }
   .cart__list :global(.ci-qty span) {
     min-width: 24px;
@@ -196,48 +205,44 @@ import { SITE, telHref } from '../data/site';
     font-weight: 800;
   }
   .cart__list :global(.ci-remove) {
-    font-size: 0.8rem;
-    color: var(--muted-on-light);
-    text-decoration: underline;
-    text-underline-offset: 2px;
     justify-self: end;
     align-self: center;
+    font-size: 12.5px;
+    color: var(--dim);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .cart__empty {
     display: grid;
     justify-items: center;
-    gap: 8px;
-    padding: 48px 0;
+    gap: 10px;
+    padding: 56px 0;
     text-align: center;
+    color: var(--muted);
   }
-  .cart__empty-art {
-    font-size: 4rem;
-    animation: float 4s ease-in-out infinite;
-  }
-  @keyframes float {
-    50% {
-      transform: translateY(-10px) rotate(8deg);
-    }
+  .cart__empty-t {
+    font: 700 22px/1.1 var(--display);
+    letter-spacing: -0.03em;
+    color: var(--text);
   }
   .cart__empty .btn {
-    margin-top: 12px;
+    margin-top: 10px;
   }
   .cart__foot {
     display: grid;
     gap: 12px;
     padding: 18px 24px calc(18px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--line-light);
-    background: #fff9f0;
+    border-top: 1px solid var(--line);
+    background: rgba(8, 6, 5, 0.6);
   }
   .cart__mode {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 5px;
+    gap: 4px;
+    padding: 4px;
     margin: 0;
-    border: 0;
+    border: 1px solid var(--line);
     border-radius: 999px;
-    background: rgba(27, 19, 16, 0.07);
   }
   .cart__mode label {
     position: relative;
@@ -255,52 +260,57 @@ import { SITE, telHref } from '../data/site';
     padding: 10px;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 0.92rem;
-    transition: background-color 0.25s;
+    font-size: 13.5px;
+    color: var(--muted);
+    transition:
+      background 0.3s,
+      color 0.3s;
   }
   .cart__mode input:checked + span {
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-  .cart__mode input:focus-visible + span {
-    outline: 3px solid var(--saffron);
+    background: rgba(255, 240, 228, 0.09);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px rgba(255, 140, 70, 0.45);
   }
   .cart__totals {
     display: grid;
     gap: 6px;
     margin: 4px 0 0;
+    font-size: 14.5px;
   }
   .cart__totals div {
     display: flex;
     justify-content: space-between;
+    color: var(--muted);
   }
   .cart__totals dd {
     margin: 0;
     font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
   .cart__discount dd {
-    color: var(--basil-2);
+    color: var(--basil);
   }
   .cart__total {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    padding-top: 8px;
+    font: 700 22px/1.2 var(--display);
+    letter-spacing: -0.03em;
+  }
+  .cart__total dt {
+    color: var(--text);
   }
   .cart__min {
-    font-size: 0.85rem;
+    font-size: 13px;
     font-weight: 700;
-    color: var(--tomato-2);
+    color: var(--gold);
   }
-  .cart__call {
-    width: 100%;
-  }
+  .cart__call,
   .cart__copy {
     width: 100%;
   }
   .cart__note {
-    font-size: 0.78rem;
-    color: var(--muted-on-light);
+    font-size: 12px;
+    color: var(--dim);
     text-align: center;
   }
 
@@ -308,89 +318,86 @@ import { SITE, telHref } from '../data/site';
     position: fixed;
     right: max(16px, env(safe-area-inset-right));
     bottom: max(16px, env(safe-area-inset-bottom));
-    z-index: 150;
+    z-index: 100;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 20px 8px 8px;
+    padding: 7px 20px 7px 7px;
     border-radius: 999px;
-    background: var(--tomato);
-    color: #fff;
+    background: var(--grad-btn);
+    color: #170903;
     font-weight: 700;
+    font-size: 14px;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.25),
-      0 18px 40px -10px rgba(255, 77, 31, 0.6);
+      0 18px 50px -12px rgba(255, 90, 31, 0.8),
+      inset 0 1px 0 rgba(255, 236, 210, 0.55);
     transform: translateY(calc(100% + 40px));
-    transition: transform 0.6s var(--ease-spring);
+    transition: transform 0.6s var(--spring);
   }
-  .cart-fab.is-visible {
+  .cart-fab:global(.is-visible) {
     transform: none;
   }
-  .cart-fab:hover {
-    transform: translateY(-3px);
-  }
-  .cart-fab__icon {
+  .cart-fab__ic {
     position: relative;
-    display: grid;
-    place-items: center;
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    display: grid;
+    place-items: center;
+    background: rgba(23, 9, 3, 0.14);
   }
-  .cart-fab__count {
+  .cart-fab__n {
     position: absolute;
     top: -4px;
     right: -6px;
     min-width: 20px;
     height: 20px;
     padding: 0 5px;
-    display: grid;
-    place-items: center;
     border-radius: 999px;
-    background: var(--saffron);
-    color: var(--ink);
-    font-size: 0.72rem;
-    font-weight: 800;
+    background: #170903;
+    color: var(--gold);
+    font: 800 11px/20px var(--sans);
+    text-align: center;
   }
   .cart-fab__total {
-    font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font: 700 15px/1 var(--display);
     padding-left: 12px;
-    border-left: 1px solid rgba(255, 255, 255, 0.35);
+    border-left: 1px solid rgba(23, 9, 3, 0.25);
   }
   .toast {
     position: fixed;
     left: 50%;
-    bottom: 88px;
-    z-index: 300;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 20px;
-    border-radius: 999px;
-    background: var(--cream);
-    color: var(--ink);
-    font-weight: 700;
-    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5);
-    transform: translate(-50%, calc(100% + 48px));
-    visibility: hidden;
-    transition:
-      transform 0.5s var(--ease-spring),
-      visibility 0s 0.5s;
-    pointer-events: none;
-    white-space: nowrap;
+    bottom: 92px;
+    z-index: 130;
     max-width: calc(100vw - 32px);
+    padding: 13px 20px;
+    border-radius: 16px;
+    background: rgba(22, 16, 13, 0.9);
+    border: 1px solid var(--line-2);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.9);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transform: translate(-50%, 40px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      transform 0.5s var(--ease),
+      opacity 0.3s,
+      visibility 0s 0.5s;
   }
-  .toast.is-visible {
+  .toast:global(.is-visible) {
     transform: translate(-50%, 0);
+    opacity: 1;
     visibility: visible;
     transition:
-      transform 0.5s var(--ease-spring),
-      visibility 0s;
+      transform 0.5s var(--ease),
+      opacity 0.3s;
   }
 </style>
 

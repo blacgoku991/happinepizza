@@ -1,0 +1,152 @@
+---
+import Icon from './Icon.astro';
+import { SITE, mapsUrl } from '../data/site';
+const fmt = (t: string) => t.replace(':', 'h');
+---
+
+<div class="panel hp" data-hours-panel data-schedule={JSON.stringify(SITE.hours.map((d) => d.slots))}>
+  <div class="hp__head">
+    <h3 class="hp__t">Horaires</h3>
+    <span class="hp__status" data-status><i></i><span>Ouvert 7j/7</span></span>
+  </div>
+  <ul class="hp__list">
+    {
+      SITE.hours.map((d, i) => (
+        <li data-day={i}>
+          <span>{d.day}</span>
+          <span class="hp__sl">{d.slots.length ? d.slots.map(([a, b]) => <i>{`${fmt(a)} – ${fmt(b)}`}</i>) : <i>Fermé</i>}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="hp__addr">
+    <p><b>{SITE.address.street}</b>{SITE.address.postalCode} {SITE.address.city}</p>
+    <a class="btn btn-glass btn-sm" href={mapsUrl} target="_blank" rel="noopener"><Icon name="pin" />Itinéraire</a>
+  </div>
+</div>
+
+<style>
+  .hp__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .hp__t {
+    font: 700 28px/1 var(--display);
+    letter-spacing: -0.035em;
+  }
+  .hp__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font: 700 12.5px/1 var(--sans);
+    background: rgba(90, 200, 120, 0.08);
+    color: #9ee3b0;
+    border: 1px solid rgba(120, 220, 150, 0.2);
+  }
+  .hp__status i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #6fe08f;
+    box-shadow: 0 0 10px 2px rgba(111, 224, 143, 0.7);
+  }
+  .hp__status:global(.closed) {
+    background: rgba(255, 90, 31, 0.08);
+    color: var(--gold);
+    border-color: rgba(255, 140, 70, 0.25);
+  }
+  .hp__status:global(.closed) i {
+    background: var(--ember);
+    box-shadow: 0 0 10px 2px rgba(255, 90, 31, 0.7);
+  }
+  .hp__list li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    margin: 0 -16px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hp__list li:last-child {
+    border-bottom: 0;
+  }
+  .hp__list li > span:first-child {
+    font-weight: 600;
+    color: #e3d7cb;
+  }
+  .hp__sl {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .hp__sl i {
+    font-style: normal;
+    white-space: nowrap;
+  }
+  .hp__sl i + i::before {
+    content: '·';
+    margin: 0 10px;
+    color: var(--dim);
+  }
+  .hp__list li:global(.today) {
+    background: linear-gradient(90deg, rgba(255, 90, 31, 0.14), rgba(255, 90, 31, 0.02));
+    border-bottom-color: transparent;
+    box-shadow: inset 2px 0 0 var(--ember);
+  }
+  .hp__list li:global(.today) .hp__sl {
+    color: var(--text);
+  }
+  .hp__addr {
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .hp__addr p {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .hp__addr b {
+    display: block;
+    color: var(--text);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-hours-panel]').forEach((box) => {
+    const schedule = JSON.parse(box.dataset.schedule || '[]') as Array<Array<[string, string]>>;
+    const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+    const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+    const idx = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(get('weekday'));
+    const now = Number(get('hour')) * 60 + Number(get('minute'));
+    const toM = (s: string) => Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5));
+    const f = (s: string) => s.replace(':', 'h');
+    box.querySelector(`li[data-day="${idx}"]`)?.classList.add('today');
+    const st = box.querySelector<HTMLElement>('[data-status]')!;
+    const today = schedule[idx] ?? [];
+    const open = today.find(([a, b]) => now >= toM(a) && now < toM(b));
+    const next = today.find(([a]) => toM(a) > now);
+    const label = st.lastElementChild!;
+    if (open) label.textContent = `Ouvert · jusqu'à ${f(open[1])}`;
+    else {
+      st.classList.add('closed');
+      label.textContent = next ? `Fermé · ouvre à ${f(next[0])}` : 'Fermé · à demain';
+    }
+  });
+</script>

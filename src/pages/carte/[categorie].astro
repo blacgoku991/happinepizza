@@ -5,12 +5,11 @@ import CategoryNav from '../../components/CategoryNav.astro';
 import PizzaCard from '../../components/PizzaCard.astro';
 import ItemCard from '../../components/ItemCard.astro';
 import PizzaFilters from '../../components/PizzaFilters.astro';
-import OfferBanner from '../../components/OfferBanner.astro';
+import OfferStrip from '../../components/OfferStrip.astro';
 import Icon from '../../components/Icon.astro';
 import { PIZZAS, CATEGORIES, PIZZA_CATEGORY, ALL_CATEGORIES, type Category } from '../../data/menu';
 import { SITE, telHref, formatPrice } from '../../data/site';
 import { breadcrumbSchema, itemListSchema, pizzaMenuItem } from '../../lib/schema';
-import { pizzaArt } from '../../lib/pizzaArt';
 
 
 export function getStaticPaths() {
@@ -83,7 +82,15 @@ const SEO_TEXT: Record<string, { h: string; p: string[] }> = {
 };
 const seo = SEO_TEXT[categorie!];
 
-const heroArt = isPizza ? pizzaArt(PIZZAS.find((p) => p.slug === 'burger') ?? PIZZAS[0]) : '';
+const HERO_PHOTO: Record<string, string> = {
+  pizzas: 'ambiance-parts',
+  menus: 'ambiance-mains',
+  pates: 'pates-bolognaise',
+  salades: 'ambiance-tomates',
+  paninis: 'ambiance-rustique',
+  desserts: 'dessert-lava-cake',
+  boissons: 'ambiance-fromage',
+};
 const others = ALL_CATEGORIES.filter((c) => c.slug !== categorie);
 
 const jsonLd = [
@@ -107,144 +114,130 @@ const jsonLd = [
 ];
 ---
 
-<Base title={meta.seoTitle} description={meta.seoDescription} jsonLd={jsonLd} rawTitle={false}>
-  <PageHero crumbs={crumbs} eyebrow={`${meta.emoji} La carte · dès ${formatPrice(minP)}`} title={meta.title} intro={meta.intro}>
-    <div class="cat-hero__ctas" data-reveal data-delay="0.3">
-      <a href={telHref} class="btn"><Icon name="phone" /> Commander : {SITE.phone}</a>
-      <button type="button" class="btn btn--ghost" data-cart-open><Icon name="bag" /> Mon panier</button>
+<Base title={meta.seoTitle} description={meta.seoDescription} jsonLd={jsonLd}>
+  <PageHero crumbs={crumbs} eyebrow={`La carte · dès ${formatPrice(minP)}`} title={meta.title} intro={meta.intro} photo={HERO_PHOTO[categorie!]}>
+    <div class="ctas">
+      <a href={telHref} class="btn btn-ember"><Icon name="phone" stroke={2} /> Commander : {SITE.phone}</a>
+      <button type="button" class="btn btn-glass" data-cart-open><Icon name="bag" /> Mon panier</button>
     </div>
-    <div slot="art" class:list={['cat-hero__art', { 'cat-hero__art--spin': isPizza }]} data-speed="-0.4" set:html={heroArt} />
   </PageHero>
 
-  <div class="on-light cat-page">
-    <CategoryNav mode="page" current={categorie} />
-    <section class="cat-page__list" data-filter-scope aria-label={meta.name}>
-      <div class="container">
-        {
-          isPizza ? (
-            <>
-              <PizzaFilters />
-              <ul class="grid-pizzas">
-                {PIZZAS.map((p) => (
-                  <li>
-                    <PizzaCard pizza={p} headingLevel="h2" />
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <ul class="grid-items">
-              {cat!.items.map((it) => (
+  <CategoryNav mode="page" current={categorie} />
+
+  <section class="list" data-filter-scope aria-label={meta.name}>
+    <div class="wrap">
+      {
+        isPizza ? (
+          <>
+            <PizzaFilters />
+            <ul class="grid-pizzas">
+              {PIZZAS.map((p) => (
                 <li>
-                  <ItemCard item={it} category={cat!.slug} headingLevel="h2" />
+                  <PizzaCard pizza={p} headingLevel="h2" />
                 </li>
               ))}
             </ul>
-          )
-        }
-        {(isPizza || categorie === 'menus') && <OfferBanner />}
-      </div>
-    </section>
-
-    <section class="container cat-seo" aria-labelledby="seo-title">
-      <div class="cat-seo__text">
-        <h2 id="seo-title" class="h-3">{seo.h}</h2>
-        {seo.p.map((p) => <p class="muted">{p}</p>)}
-      </div>
-      <nav class="cat-seo__more" aria-label="Autres catégories">
-        <p class="eyebrow">Continuer sur la carte</p>
-        <ul>
-          {
-            others.map((c) => (
+          </>
+        ) : categorie === 'menus' ? (
+          <ul class="combo-grid">
+            {cat!.items.map((it) => (
               <li>
-                <a href={`/carte/${c.slug}/`}>
-                  <span aria-hidden="true">{c.emoji}</span> {c.name}
-                  <Icon name="arrow" size={18} />
-                </a>
+                <ItemCard item={it} category={cat!.slug} headingLevel="h2" variant="combo" />
               </li>
-            ))
-          }
-        </ul>
-      </nav>
-    </section>
-  </div>
+            ))}
+          </ul>
+        ) : (
+          <div class="rows">
+            {cat!.items.map((it) => (
+              <ItemCard item={it} category={cat!.slug} headingLevel="h2" />
+            ))}
+          </div>
+        )
+      }
+      {(isPizza || categorie === 'menus') && <OfferStrip />}
+    </div>
+  </section>
+
+  <section class="wrap seo" aria-labelledby="seo-title">
+    <div class="seo__txt">
+      <h2 id="seo-title" class="h3">{seo.h}</h2>
+      {seo.p.map((p) => <p>{p}</p>)}
+    </div>
+    <nav class="seo__more" aria-label="Autres catégories">
+      <p class="eyebrow">Continuer sur la carte</p>
+      <ul>
+        {
+          others.map((c) => (
+            <li>
+              <a href={`/carte/${c.slug}/`}>
+                {c.name}
+                <Icon name="arrow" size={18} />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </section>
 </Base>
 
 <style>
-  .cat-hero__ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .cat-hero__art {
-    width: min(100%, 440px);
-    filter: drop-shadow(0 40px 40px rgba(0, 0, 0, 0.5));
-    animation: floaty 6s ease-in-out infinite;
-  }
-  .cat-hero__art--spin {
-    animation: slowspin 50s linear infinite;
-  }
-  @keyframes slowspin {
-    to {
-      rotate: 360deg;
-    }
-  }
-  @keyframes floaty {
-    50% {
-      translate: 0 -14px;
-      rotate: -4deg;
-    }
-  }
-  .cat-page {
-    padding-bottom: clamp(60px, 8vw, 120px);
-  }
-  .cat-page__list {
+  .list {
     padding-top: clamp(40px, 5vw, 64px);
   }
-  .cat-seo {
+  .rows {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+    column-gap: clamp(24px, 4vw, 64px);
+    padding: 8px clamp(20px, 3vw, 40px);
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255, 240, 228, 0.03), rgba(255, 240, 228, 0.01));
+  }
+  .combo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+    gap: 20px;
+  }
+  .seo {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
     gap: clamp(32px, 6vw, 90px);
-    margin-top: clamp(64px, 8vw, 110px);
+    margin-block: clamp(72px, 9vw, 130px);
     padding-top: clamp(40px, 5vw, 64px);
-    border-top: 1px solid var(--line-light);
+    border-top: 1px solid var(--line);
   }
-  .cat-seo__text {
+  .seo__txt {
     display: grid;
     gap: 14px;
     align-content: start;
+    color: var(--muted);
   }
-  .cat-seo__more ul {
-    display: grid;
+  .seo__txt h2 {
+    color: var(--text);
+  }
+  .seo__more ul {
     margin-top: 14px;
   }
-  .cat-seo__more a {
+  .seo__more a {
     display: flex;
     align-items: center;
-    gap: 10px;
     padding: 14px 0;
-    border-bottom: 1px solid var(--line-light);
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.2rem;
+    border-bottom: 1px solid var(--line);
+    font: 700 19px/1.2 var(--display);
     letter-spacing: -0.02em;
-    transition:
-      color 0.2s,
-      padding 0.4s var(--ease-out);
+    transition: color 0.3s, padding 0.4s var(--ease);
   }
-  .cat-seo__more a :global(svg) {
+  .seo__more a :global(.i) {
     margin-left: auto;
-    transition: transform 0.4s var(--ease-out);
+    color: var(--ember-2);
   }
-  .cat-seo__more a:hover {
-    color: var(--tomato-2);
+  .seo__more a:hover {
+    color: var(--gold);
     padding-left: 8px;
   }
-  .cat-seo__more a:hover :global(svg) {
-    transform: translateX(4px);
-  }
   @media (max-width: 800px) {
-    .cat-seo {
+    .seo {
       grid-template-columns: 1fr;
     }
   }

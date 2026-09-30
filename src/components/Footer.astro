@@ -4,279 +4,194 @@ import Icon from './Icon.astro';
 import { SITE, NAV, telHref, mapsUrl } from '../data/site';
 import { ALL_CATEGORIES, PIZZAS } from '../data/menu';
 
-const socials = Object.entries(SITE.social).filter(([, url]) => url) as Array<[keyof typeof SITE.social, string]>;
-const year = new Date().getFullYear();
+const socials = Object.entries(SITE.social).filter(([, u]) => u) as Array<['instagram' | 'facebook' | 'tiktok' | 'google', string]>;
+const fmt = (t: string) => t.replace(':', 'h');
 ---
 
-<footer class="site-footer">
-  <div class="footer-cta">
-    <div class="container footer-cta__inner">
-      <p class="footer-cta__title" data-split>
-        Une petite faim ? <span class="serif text-saffron">On arrive.</span>
-      </p>
-      <div class="footer-cta__actions" data-reveal>
-        <a href={telHref} class="btn btn--lg btn--saffron" data-magnetic><Icon name="phone" /> {SITE.phone}</a>
-        <a href="/carte/" class="btn btn--lg btn--ghost">Voir la carte <Icon name="arrow" /></a>
+<footer class="ftr">
+  <div class="wrap">
+    <div class="ftr__grid">
+      <div class="ftr__brand">
+        <a href="/" aria-label={`${SITE.name} — accueil`}><Logo /></a>
+        <p>Pizzas artisanales, pâtes et desserts à {SITE.address.city}. Livraison, à emporter et sur place, 7 jours sur 7.</p>
+        <a class="btn btn-ember btn-sm" href={telHref}><Icon name="phone" size={17} stroke={2} /> {SITE.phone}</a>
+        {
+          socials.length > 0 && (
+            <ul class="ftr__social">
+              {socials.map(([n, u]) => (
+                <li>
+                  <a href={u} target="_blank" rel="noopener me" aria-label={n}>
+                    <Icon name={n === 'google' ? 'star' : n} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+      <div>
+        <h2 class="ftr__h">La carte</h2>
+        <ul>{ALL_CATEGORIES.map((c) => <li><a href={`/carte/${c.slug}/`}>{c.name}</a></li>)}</ul>
+      </div>
+      <div>
+        <h2 class="ftr__h">Nos pizzas</h2>
+        <ul>{PIZZAS.slice(0, 7).map((p) => <li><a href={`/pizzas/${p.slug}/`}>Pizza {p.name}</a></li>)}</ul>
+      </div>
+      <div>
+        <h2 class="ftr__h">Horaires</h2>
+        <ul class="ftr__hours">
+          {
+            SITE.hours.map((d) => (
+              <li>
+                <span>{d.day}</span>
+                <span>{d.slots.length ? d.slots.map(([a, b]) => `${fmt(a)}–${fmt(b)}`).join(' · ') : 'Fermé'}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div>
+        <h2 class="ftr__h">Nous trouver</h2>
+        <address>
+          <a href={mapsUrl} target="_blank" rel="noopener">{SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</a>
+        </address>
+        <ul class="ftr__links">
+          {NAV.filter((n) => !n.href.startsWith('/carte')).map((n) => <li><a href={n.href}>{n.label}</a></li>)}
+        </ul>
       </div>
     </div>
-    <div class="marquee footer-marquee" aria-hidden="true" style="--duration: 40s">
-      {
-        [0, 1].map(() => (
-          <div class="marquee__track">
-            <span>Happiness</span>
-            <Icon name="star" size={40} />
-            <span class="serif">Pizza</span>
-            <Icon name="star" size={40} />
-            <span>Happiness</span>
-            <Icon name="star" size={40} />
-            <span class="serif">Pizza</span>
-            <Icon name="star" size={40} />
-          </div>
-        ))
-      }
+    <div class="ftr__bot">
+      <span>© {new Date().getFullYear()} {SITE.name} · {SITE.legal.rcs} {SITE.legal.siren}</span>
+      <nav aria-label="Informations légales">
+        <a href="/mentions-legales/">Mentions légales</a>
+        <a href="/mentions-legales/#confidentialite">Confidentialité</a>
+        <a href="/sitemap-index.xml">Plan du site</a>
+      </nav>
     </div>
-  </div>
-
-  <div class="container footer-grid">
-    <div class="footer-brand">
-      <a href="/" aria-label={`${SITE.name} — accueil`}><Logo size="md" /></a>
-      <p class="muted">
-        Pizzeria artisanale à {SITE.address.city} ({SITE.address.postalCode}). Pâte fraîche du jour, ingrédients soigneusement
-        sélectionnés, en livraison, à emporter ou sur place.
-      </p>
-      {
-        socials.length > 0 && (
-          <ul class="footer-socials">
-            {socials.map(([name, url]) => (
-              <li>
-                <a href={url} target="_blank" rel="noopener me" aria-label={name}>
-                  <Icon name={name === 'google' ? 'star' : name} size={20} />
-                </a>
-              </li>
-            ))}
-          </ul>
-        )
-      }
-    </div>
-
-    <div>
-      <h2 class="footer-title">La carte</h2>
-      <ul class="footer-links">
-        {ALL_CATEGORIES.map((c) => <li><a href={`/carte/${c.slug}/`}>{c.name}</a></li>)}
-      </ul>
-    </div>
-
-    <div>
-      <h2 class="footer-title">Nos pizzas</h2>
-      <ul class="footer-links">
-        {PIZZAS.slice(0, 8).map((p) => <li><a href={`/pizzas/${p.slug}/`}>Pizza {p.name}</a></li>)}
-      </ul>
-    </div>
-
-    <div>
-      <h2 class="footer-title">Horaires</h2>
-      <ul class="footer-hours">
-        {
-          SITE.hours.map((d) => (
-            <li>
-              <span>{d.day}</span>
-              <span>{d.slots.length ? d.slots.map(([a, b]) => `${a.replace(':', 'h')}–${b.replace(':', 'h')}`).join(' · ') : 'Fermé'}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-
-    <div>
-      <h2 class="footer-title">Nous trouver</h2>
-      <address class="footer-address">
-        <a href={mapsUrl} target="_blank" rel="noopener"><Icon name="pin" size={18} /> {SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</a>
-        <a href={telHref}><Icon name="phone" size={18} /> {SITE.phone}</a>
-        {SITE.email && <a href={`mailto:${SITE.email}`}>{SITE.email}</a>}
-      </address>
-      <ul class="footer-links footer-links--compact">
-        {NAV.filter((n) => !n.href.startsWith('/carte')).map((n) => <li><a href={n.href}>{n.label}</a></li>)}
-      </ul>
-    </div>
-  </div>
-
-  <div class="container footer-bottom">
-    <p>© {year} {SITE.name} — {SITE.address.city}. Tous droits réservés.</p>
-    <ul>
-      <li><a href="/mentions-legales/">Mentions légales</a></li>
-      <li><a href="/mentions-legales/#confidentialite">Confidentialité</a></li>
-      <li><a href="/sitemap-index.xml">Plan du site</a></li>
-    </ul>
   </div>
 </footer>
 
 <style>
-  .site-footer {
+  .ftr {
     position: relative;
-    background: var(--ink);
-    border-top: 1px solid var(--line-dark);
-    overflow: hidden;
+    background: #080605;
+    border-top: 1px solid rgba(255, 150, 90, 0.18);
+    padding: 72px 0 30px;
   }
-  .footer-cta {
-    padding-top: clamp(80px, 10vw, 140px);
+  .ftr::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 150, 80, 0.95), transparent);
+    box-shadow: 0 0 36px 6px rgba(255, 90, 31, 0.45);
   }
-  .footer-cta__inner {
+  .ftr__grid {
     display: grid;
-    gap: 36px;
-    justify-items: center;
-    text-align: center;
-  }
-  .footer-cta__title {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2.8rem, 8vw, 7rem);
-    line-height: 0.95;
-    letter-spacing: -0.045em;
-  }
-  .footer-cta__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    justify-content: center;
-  }
-  .footer-marquee {
-    margin-top: clamp(60px, 8vw, 110px);
-    padding-block: 18px;
-    color: rgba(255, 246, 234, 0.07);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(4rem, 14vw, 12rem);
-    letter-spacing: -0.05em;
-    line-height: 1;
-  }
-  .footer-marquee .serif {
-    font-weight: 400;
-  }
-  .footer-marquee :global(svg) {
-    color: var(--tomato);
-    opacity: 0.6;
-    flex: none;
-  }
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 1.4fr repeat(4, 1fr);
+    grid-template-columns: 1.5fr 1fr 1fr 1.1fr 1fr;
     gap: 40px;
-    padding-block: 56px;
-    border-top: 1px solid var(--line-dark);
   }
-  .footer-brand {
+  .ftr__brand {
     display: grid;
     gap: 18px;
     align-content: start;
+    justify-items: start;
   }
-  .footer-brand p {
-    font-size: 0.95rem;
-    max-width: 34ch;
+  .ftr__brand p {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--muted);
+    max-width: 320px;
   }
-  .footer-title {
-    font-size: 0.8rem;
-    letter-spacing: 0.16em;
+  .ftr__h {
+    margin: 6px 0 16px;
+    font: 700 10.5px/1 var(--sans);
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--saffron);
-    margin-bottom: 18px;
-    font-weight: 700;
+    color: var(--dim);
   }
-  .footer-links {
+  .ftr ul {
     display: grid;
     gap: 10px;
-    font-size: 0.95rem;
+    font-size: 14.5px;
+    color: #d8cbbe;
   }
-  .footer-links a,
-  .footer-address a {
-    color: var(--muted-on-dark);
-    transition: color 0.2s;
+  .ftr ul a,
+  address a {
+    transition: color 0.3s;
   }
-  .footer-links a:hover,
-  .footer-address a:hover {
-    color: var(--cream);
+  .ftr ul a:hover,
+  address a:hover {
+    color: var(--ember-2);
   }
-  .footer-links--compact {
-    margin-top: 20px;
-  }
-  .footer-hours {
-    display: grid;
-    gap: 8px;
-    font-size: 0.88rem;
-  }
-  .footer-hours li {
-    display: grid;
-    gap: 2px;
-  }
-  .footer-hours li span:first-child {
-    font-weight: 700;
-  }
-  .footer-hours li span:last-child {
-    color: var(--muted-on-dark);
-  }
-  .footer-address {
-    display: grid;
-    gap: 14px;
+  address {
     font-style: normal;
-    font-size: 0.95rem;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #d8cbbe;
   }
-  .footer-address a {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
+  .ftr__links {
+    margin-top: 18px;
   }
-  .footer-address :global(svg) {
-    flex: none;
-    margin-top: 3px;
-    color: var(--tomato);
+  .ftr__hours {
+    font-size: 13px !important;
+    gap: 7px !important;
   }
-  .footer-socials {
-    display: flex;
-    gap: 10px;
+  .ftr__hours li {
+    display: grid;
   }
-  .footer-socials a {
+  .ftr__hours span:first-child {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .ftr__hours span:last-child {
+    color: var(--muted);
+  }
+  .ftr__social {
+    display: flex !important;
+    gap: 8px;
+  }
+  .ftr__social a {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 1px solid var(--line-dark);
-    transition:
-      background-color 0.25s,
-      color 0.25s;
   }
-  .footer-socials a:hover {
-    background: var(--cream);
-    color: var(--ink);
-  }
-  .footer-bottom {
+  .ftr__bot {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 16px;
-    padding-block: 24px 32px;
-    border-top: 1px solid var(--line-dark);
-    font-size: 0.85rem;
-    color: var(--muted-on-dark);
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--dim);
   }
-  .footer-bottom ul {
+  .ftr__bot nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 22px;
   }
-  .footer-bottom a:hover {
-    color: var(--cream);
+  .ftr__bot a:hover {
+    color: var(--text);
   }
-  @media (max-width: 1100px) {
-    .footer-grid {
-      grid-template-columns: repeat(2, 1fr);
+  @media (max-width: 1180px) {
+    .ftr__grid {
+      grid-template-columns: 1fr 1fr 1fr;
     }
-    .footer-brand {
+    .ftr__brand {
       grid-column: 1 / -1;
     }
   }
-  @media (max-width: 520px) {
-    .footer-grid {
-      grid-template-columns: 1fr;
+  @media (max-width: 640px) {
+    .ftr__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px 20px;
     }
   }
 </style>

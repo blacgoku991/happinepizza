@@ -1,338 +1,345 @@
 ---
+import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
-import Hours from '../components/Hours.astro';
+import Photo from '../components/Photo.astro';
+import PizzaCard from '../components/PizzaCard.astro';
+import ItemCard from '../components/ItemCard.astro';
 import Faq from '../components/Faq.astro';
-import { SITE, telHref } from '../data/site';
-import { PIZZAS, FEATURED, CATEGORIES, PIZZA_CATEGORY, BASES, minPrice } from '../data/menu';
-import { pizzaArt } from '../lib/pizzaArt';
-import { formatPrice } from '../data/site';
+import { SITE, telHref, mapsUrl, formatPrice } from '../data/site';
+import { PIZZAS, CATEGORIES, MENUS, pizzaBySlug, minPrice } from '../data/menu';
+import { cutout, photo } from '../lib/photos';
 import { faqSchema } from '../lib/schema';
 import { FAQS } from '../data/faq';
 
 const title = `Pizzeria à ${SITE.address.city} – Livraison | ${SITE.name}`;
 const description = `Pizzeria artisanale à ${SITE.address.city} : pizzas à pâte fraîche, pâtes, salades, desserts. Livraison gratuite ${SITE.delivery.radiusKm} km, à emporter, sur place. ☎ ${SITE.phone}`;
 
-const heroPizza = pizzaArt({ slug: 'hero-fallback', base: 'tomate', ingredients: ['Olives', 'Champignons', 'Tomates cerises', 'Poivrons', 'Merguez'] });
+const cut = async (k: string, w = 1000) => (await getImage({ src: cutout(k)!, width: w, format: 'webp', quality: 82 })).src;
+const hero = await cut('supreme', 1100);
+const stackImgs = [await cut('pepperoni', 700), await cut('legumes', 700), await cut('supreme', 700)];
+const sunImg = await cut('pepperoni', 1100);
 
-const categoryTiles = [
-  { slug: PIZZA_CATEGORY.slug, name: PIZZA_CATEGORY.name, count: PIZZAS.length, from: Math.min(...PIZZAS.map(minPrice)), art: pizzaArt(PIZZAS[0]) },
-  ...CATEGORIES.map((c) => ({
-    slug: c.slug,
-    name: c.name,
-    count: c.items.length,
-    from: Math.min(...c.items.map((i) => i.price)),
-    art: '',
-  })),
-];
-
-// points décoratifs sur le radar (angle doré pour une répartition harmonieuse)
-const radarDots = Array.from({ length: 11 }, (_, i) => {
-  const a = i * 2.39996 + 0.6;
-  const d = 0.26 + ((i * 0.37) % 0.6);
-  return [(50 + Math.cos(a) * d * 46).toFixed(1), (50 + Math.sin(a) * d * 46).toFixed(1)];
-});
-
-const marquee = ['Pâte fraîche du jour', 'Mozzarella fondante', `Livraison gratuite ${SITE.delivery.radiusKm} km`, SITE.offer.short, 'Ouvert 7j/7', 'Sur place · À emporter'];
+const signatures = ['reine', 'burger', 'chevre-miel', 'bresilienne'].map((s) => pizzaBySlug(s)!);
+const sigLabels = ["L'incontournable", 'Coup de cœur', 'Douce & salée', 'Relevée'];
+const pates = CATEGORIES.find((c) => c.slug === 'pates')!;
+const desserts = CATEGORIES.find((c) => c.slug === 'desserts')!;
+const combos = [MENUS.find((m) => m.slug === 'menu-ambiance')!, MENUS.find((m) => m.slug === 'menu-duo')!];
+const from = Math.min(...PIZZAS.map(minPrice));
+const fmt = (t: string) => t.replace(':', 'h');
+const edges = ['#2a1206', '#3a1a09', '#4d240d', '#633012', '#7a3e18', '#91501f', '#a8622a', '#b9723a'];
 ---
 
-<Base title={title} description={description} rawTitle jsonLd={[faqSchema(FAQS)]} bodyClass="page-home">
-  <!-- ============ HERO 3D ============ -->
-  <section class="hero" data-hero aria-labelledby="hero-title">
-    <div class="hero__bg" aria-hidden="true">
-      <div class="hero__glow hero__glow--1"></div>
-      <div class="hero__glow hero__glow--2"></div>
-      <span class="hero__word" data-hero-word>PIZZA</span>
-    </div>
-
-    <div class="hero__stage" aria-hidden="true">
-      <canvas class="hero__canvas" data-hero-canvas></canvas>
-      <div class="hero__fallback" data-hero-fallback set:html={heroPizza} />
-    </div>
-
-    <div class="container hero__content" data-hero-content>
-      <h1 id="hero-title" class="hero__title">
-        <span class="eyebrow hero__eyebrow" data-reveal>Pizzeria artisanale · {SITE.address.city}</span>
-        <span class="hero__headline" data-split data-split-now data-delay="0.2">
-          La pizza qui rend <span class="serif text-saffron">heureux.</span>
-        </span>
-      </h1>
-      <p class="lead hero__lead" data-reveal data-delay="0.35">
-        Pâte fraîche pétrie chaque jour, garnitures généreuses et mozzarella qui file. En livraison, à emporter ou sur place à {SITE.address.city}.
-      </p>
-      <div class="hero__ctas" data-reveal data-delay="0.45">
-        <a href="/carte/" class="btn btn--lg" data-magnetic>Découvrir la carte <Icon name="arrow" /></a>
-        <a href={telHref} class="btn btn--lg btn--ghost"><Icon name="phone" /> {SITE.phone}</a>
-      </div>
-      <ul class="hero__chips" data-reveal data-delay="0.55">
-        <li class="chip"><Icon name="bike" /> Livraison gratuite · {SITE.delivery.radiusKm} km</li>
-        <li class="chip"><Icon name="clock" /> Ouvert 7j/7</li>
-        <li class="chip"><Icon name="store" /> Sur place & à emporter</li>
-      </ul>
-    </div>
-
-    <a href="/carte/pizzas/" class="hero__sticker" aria-label={`${SITE.offer.title} — voir les pizzas`} data-reveal data-delay="0.7">
-      <svg viewBox="0 0 200 200" class="hero__sticker-ring" aria-hidden="true">
-        <defs><path id="sticker-circle" d="M100 100m-76 0a76 76 0 1 1 152 0a76 76 0 1 1-152 0"></path></defs>
-        <text><textPath href="#sticker-circle">★ 2 pizzas achetées ★ la 3e offerte ★ Senior & Méga </textPath></text>
-      </svg>
-      <span class="hero__sticker-core">3<sup>e</sup><small>offerte</small></span>
-    </a>
-
-    <div class="hero__scroll" aria-hidden="true">
-      <span>Scrollez</span>
-      <span class="hero__scroll-line"></span>
-    </div>
-  </section>
-
-  <!-- ============ BANDEAU ============ -->
-  <div class="band-wrap" aria-hidden="true"><div class="band">
-    <div class="marquee" style="--duration: 28s">
-      {
-        [0, 1].map(() => (
-          <div class="marquee__track">
-            {marquee.map((m) => (
-              <>
-                <span>{m}</span>
-                <Icon name="sparkles" size={28} />
-              </>
-            ))}
+<Base title={title} description={description} rawTitle jsonLd={[faqSchema(FAQS)]}>
+  <!-- ============ HERO + SAVOIR-FAIRE (scène 3D collante) ============ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="stage-track" aria-hidden="true">
+      <div class="stage" data-stage>
+        <div class="stage__bg"></div>
+        <div class="pz" data-pz>
+          <div class="pz__glow" data-pz-glow></div>
+          <div class="pz__shadow" data-pz-shadow></div>
+          <div class="pz__tilt" data-pz-tilt>
+            <div class="pz__rings" data-pz-rings>
+              <svg viewBox="0 0 1000 1000">
+                <defs><linearGradient id="g-arc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD49A"></stop><stop offset=".5" stop-color="#FF7A2E"></stop><stop offset="1" stop-color="#FF5A1F" stop-opacity="0"></stop></linearGradient></defs>
+                <circle cx="500" cy="500" r="318" fill="none" stroke="rgba(255,226,204,.10)" stroke-width="1.2"></circle>
+                <circle cx="500" cy="500" r="372" fill="none" stroke="rgba(255,226,204,.07)" stroke-width="1" stroke-dasharray="2 9"></circle>
+                <circle cx="500" cy="500" r="430" fill="none" stroke="rgba(255,226,204,.05)" stroke-width="1"></circle>
+                <circle cx="500" cy="500" r="496" fill="none" stroke="rgba(255,226,204,.035)" stroke-width="1"></circle>
+                <path d="M500 182 A318 318 0 0 1 800 395" fill="none" stroke="url(#g-arc)" stroke-width="2.4" stroke-linecap="round"></path>
+                <circle cx="500" cy="182" r="4" fill="#FFD49A"></circle>
+              </svg>
+            </div>
+            <div class="pz__spin" data-pz-spin>
+              {edges.map((c, i) => <i class="pz__edge" style={`transform:translateZ(${-15 + i * 2}px);background:${c}`} />)}
+              <img src={hero} alt="" style="transform:translateZ(-.6px);filter:brightness(.75)" width="1100" height="1100" />
+              <img src={hero} alt="" width="1100" height="1100" fetchpriority="high" />
+              <span class="hot" data-hot="1" style="--x:7%;--y:45%"><b>01</b></span>
+              <span class="hot" data-hot="2" style="--x:39%;--y:40%"><b>02</b></span>
+              <span class="hot" data-hot="3" style="--x:57%;--y:57%"><b>03</b></span>
+              <span class="hot" data-hot="4" style="--x:66%;--y:92%"><b>04</b></span>
+            </div>
+            <div class="pz__light"></div>
           </div>
-        ))
-      }
-    </div>
-  </div></div>
-
-  <!-- ============ SAVOIR-FAIRE ============ -->
-  <section class="section on-light craft" aria-labelledby="craft-title">
-    <div class="container">
-      <div class="craft__grid">
-        <div class="section-head">
-          <span class="eyebrow">Notre savoir-faire</span>
-          <h2 id="craft-title" class="h-1" data-split>Comme à la maison, <span class="serif text-tomato">en mieux.</span></h2>
-          <p class="lead muted" data-reveal>
-            Chez {SITE.name}, chaque pizza est préparée à la commande avec des ingrédients frais et soigneusement sélectionnés. Classiques
-            indémodables ou recettes plus audacieuses : chaque bouchée est une explosion de saveurs.
-          </p>
+          <div class="pz__tag" data-pz-tag>
+            <span class="pz__ring">dès</span>
+            <span><small>Junior · Senior · Méga</small><b>{formatPrice(from).replace(' €', '')} <span>€</span></b></span>
+          </div>
         </div>
-        <ul class="craft__stats" data-reveal>
-          <li><strong><span data-count={PIZZAS.length}>{PIZZAS.length}</span></strong><span>recettes de pizzas</span></li>
-          <li><strong>3</strong><span>tailles : Junior, Senior, Méga</span></li>
-          <li><strong>7<small>/7</small></strong><span>midi & soir</span></li>
-          <li><strong><span data-count={SITE.delivery.radiusKm}>{SITE.delivery.radiusKm}</span><small>km</small></strong><span>de livraison gratuite</span></li>
-        </ul>
+        <canvas class="sparks" data-sparks></canvas>
       </div>
+    </div>
 
-      <ul class="craft__cards">
-        <li class="craft__card tilt" data-reveal>
-          <span class="tilt__glare"></span>
-          <span class="craft__icon tilt__pop"><Icon name="wheat" size={30} /></span>
-          <h3 class="h-3">Pâte fraîche du jour</h3>
-          <p class="muted">Pétrie chaque jour sur place pour une pâte moelleuse à cœur et croustillante dessous.</p>
-        </li>
-        <li class="craft__card tilt" data-reveal data-delay="0.08">
-          <span class="tilt__glare"></span>
-          <span class="craft__icon craft__icon--basil tilt__pop"><Icon name="leaf" size={30} /></span>
-          <h3 class="h-3">Ingrédients choisis</h3>
-          <p class="muted">Mozzarella fondante, légumes frais, viandes et fromages sélectionnés avec soin.</p>
-        </li>
-        <li class="craft__card tilt" data-reveal data-delay="0.16">
-          <span class="tilt__glare"></span>
-          <span class="craft__icon craft__icon--saffron tilt__pop"><Icon name="oven" size={30} /></span>
-          <h3 class="h-3">Cuite à la minute</h3>
-          <p class="muted">Garnie et enfournée à la commande, puis livrée chaude jusqu'à votre porte.</p>
-        </li>
+    <div class="hero__screen wrap">
+      <div class="hero__content" data-hero-content>
+        <span class="kicker"><i></i>Pizzeria artisanale · {SITE.address.city}</span>
+        <h1 id="hero-title" class="h1 hero__title">
+          <span class="sr-only">{SITE.name}, pizzeria à {SITE.address.city} — </span>
+          <span>Le bonheur</span>
+          <em class="grad">sort du four.</em>
+        </h1>
+        <p class="lead">
+          Pâte fraîche pétrie sur place, garnitures généreuses jusqu'au bord, cuisson minute. <strong>Livrée chez vous, à emporter ou sur place.</strong>
+        </p>
+        <div class="ctas">
+          <a class="btn btn-ember" href="/carte/">Voir la carte <Icon name="arrow" stroke={2} /></a>
+          <a class="btn btn-glass" href={telHref}><span class="dot"><Icon name="phone" /></span><span>Appeler<span class="hide-m">&nbsp;· {SITE.phone}</span></span></a>
+        </div>
+      </div>
+      <ul class="trust" data-trust>
+        <li class="chip"><span class="ic"><Icon name="scooter" /></span><div><b>Livraison offerte</b><span>jusqu'à {SITE.delivery.radiusKm} km · dès {SITE.delivery.minOrder} €</span></div></li>
+        <li class="chip"><span class="ic"><Icon name="clock" /></span><div><b>Ouvert 7j/7</b><span>midi &amp; soir</span></div></li>
+        <li class="chip"><span class="ic"><Icon name="store" /></span><div><b>Sur place &amp; à emporter</b><span>{SITE.address.street.replace('avenue', 'av.')}</span></div></li>
       </ul>
+      <div class="scroll-cue" aria-hidden="true" data-cue>Défiler</div>
     </div>
-  </section>
 
-  <!-- ============ SIGNATURES (scroll horizontal) ============ -->
-  <section class="sig" data-hscroll aria-labelledby="sig-title">
-    <div class="sig__inner">
-      <div class="container sig__head">
-        <div>
-          <span class="eyebrow">Les incontournables</span>
-          <h2 id="sig-title" class="h-1" data-split>Nos pizzas <span class="serif text-tomato">signature</span></h2>
-        </div>
-        <a href="/carte/pizzas/" class="btn btn--ghost">Toutes les pizzas <Icon name="arrow" /></a>
-      </div>
-      <div class="sig__viewport">
-        <ol class="sig__track" data-hscroll-track>
-          {
-            FEATURED.map((p, i) => (
-              <li class="sig__card">
-                <a href={`/pizzas/${p.slug}/`} class="sig__link">
-                  <span class="sig__num">{String(i + 1).padStart(2, '0')}</span>
-                  <div class="sig__art" data-spin set:html={pizzaArt(p)} />
-                  <div class="sig__meta">
-                    <span class="sig__base">{BASES[p.base]}</span>
-                    <h3 class="sig__name">{p.name}</h3>
-                    <p class="sig__ing">{p.ingredients.join(' · ')}</p>
-                    <span class="sig__price">
-                      dès <strong>{formatPrice(minPrice(p))}</strong>
-                      <span class="sig__go"><Icon name="arrow-up-right" size={20} /></span>
-                    </span>
-                  </div>
-                </a>
-              </li>
-            ))
-          }
+    <div class="story wrap">
+      <div class="story__copy">
+        <span class="eyebrow">Le savoir-faire</span>
+        <h2 class="h2">Généreuse<em class="grad block">jusqu'au bord.</em></h2>
+        <p class="lead story__lead">Une vraie pizza se juge sur trois choses&nbsp;: la pâte, la cuisson et la générosité. Chez Happiness, on ne transige sur aucune.</p>
+        <ol class="legend" data-legend>
+          <li data-hot="1"><span class="n">01</span><b>Pâte fraîche du jour</b><p>Pétrie sur place, reposée, étirée à la main.</p></li>
+          <li data-hot="2"><span class="n">02</span><b>Sauce &amp; mozzarella</b><p>Sauce tomate onctueuse, mozzarella qui file.</p></li>
+          <li data-hot="3"><span class="n">03</span><b>Garnitures généreuses</b><p>Jusqu'au bord, pour que chaque part compte.</p></li>
+          <li data-hot="4"><span class="n">04</span><b>Cuisson minute</b><p>Croustillante dehors, moelleuse dedans.</p></li>
         </ol>
       </div>
     </div>
   </section>
 
+  <!-- ============ BANDEAU ============ -->
+  <div class="marquee" aria-hidden="true">
+    <div class="mq">
+      {
+        [0, 1].map(() => (
+          <div class="mq__g">
+            <span>Pâte fraîche du jour</span><i /><em>livraison offerte</em><i /><span>Junior · Senior · Méga</span><i /><em>ouvert 7j/7</em><i />
+            <span>2 achetées = la 3<sup>e</sup> offerte</span><i /><em>midi &amp; soir</em><i />
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
   <!-- ============ OFFRE ============ -->
-  <section class="section offer" aria-labelledby="offer-title">
-    <div class="container">
-      <div class="offer__card">
-        <div class="offer__stack" aria-hidden="true">
-          <div class="offer__pz offer__pz--1" data-rotate="120" set:html={pizzaArt(PIZZAS.find((p) => p.slug === 'barbecue')!)} />
-          <div class="offer__pz offer__pz--2" data-rotate="-140" set:html={pizzaArt(PIZZAS.find((p) => p.slug === 'chevre-miel')!)} />
-          <div class="offer__pz offer__pz--3" data-rotate="160" set:html={pizzaArt(PIZZAS.find((p) => p.slug === 'reine')!)} />
-          <span class="offer__free">Offerte !</span>
+  <section class="sec offer" id="offre" aria-labelledby="offer-title">
+    <div class="wrap">
+      <div class="offer__panel rv">
+        <div class="offer__num" aria-hidden="true">3</div>
+        <div class="offer__copy">
+          <span class="eyebrow">L'offre Happiness</span>
+          <h2 id="offer-title" class="h2 offer__title"><span class="nw">2 achetées,</span><em class="grad block">la 3<sup>e</sup> offerte.</em></h2>
+          <p class="lead">Commandez deux pizzas, la troisième est pour nous&nbsp;: la moins chère des trois vous est offerte — en livraison, à emporter ou sur place.</p>
+          <ul class="conds">
+            <li><Icon name="check" size={16} stroke={2.2} />Pizzas Senior &amp; Méga</li>
+            <li><Icon name="check" size={16} stroke={2.2} />Livraison, emporter, sur place</li>
+            <li class="x"><Icon name="x" size={16} stroke={2.2} />Hors Margherita</li>
+          </ul>
+          <div class="ctas">
+            <a class="btn btn-ember" href="/carte/pizzas/">J'en profite <Icon name="arrow" stroke={2} /></a>
+            <a class="btn btn-glass" href={telHref}><span class="dot"><Icon name="phone" /></span>Commander par téléphone</a>
+          </div>
         </div>
-        <div class="offer__text">
-          <span class="eyebrow">Offre permanente</span>
-          <h2 id="offer-title" class="h-1" data-split>
-            2 pizzas achetées, <span class="serif text-saffron">la 3e offerte.</span>
-          </h2>
-          <p class="lead muted" data-reveal>{SITE.offer.conditions} Parfait pour les soirées entre amis ou en famille.</p>
-          <div class="offer__ctas" data-reveal>
-            <a href="/carte/pizzas/" class="btn btn--lg btn--saffron" data-magnetic>J'en profite <Icon name="arrow" /></a>
-            <a href="/carte/menus/" class="btn btn--lg btn--ghost">Voir les menus</a>
+        <div class="offer__visual" data-offer aria-hidden="true">
+          <div class="stack" data-stack>
+            {
+              stackImgs.map((src, i) => (
+                <div class="dw">
+                  <div class="disc">
+                    {i === 2 && <div class="disc__em" />}
+                    <div class="disc__sh" />
+                    <img src={src} alt="" style="transform:translateZ(-8px);filter:brightness(.25) sepia(.3)" />
+                    <img src={src} alt="" style="transform:translateZ(-6px);filter:brightness(.4) sepia(.3)" />
+                    <img src={src} alt="" style="transform:translateZ(-4px);filter:brightness(.55) sepia(.2)" />
+                    <img src={src} alt="" style="transform:translateZ(-2px);filter:brightness(.72)" />
+                    <img src={src} alt="" style="filter:saturate(1.08) contrast(1.04)" loading="lazy" />
+                    <div class="disc__lt" />
+                  </div>
+                  <span class:list={['dtag', { 'dtag--l': i === 1, 'dtag--hot': i === 2 }]}>
+                    <i>{i + 1}</i>
+                    {i === 0 ? 'Une pizza' : i === 1 ? 'Deux pizzas' : <span>La 3<sup>e</sup> offerte</span>}
+                  </span>
+                </div>
+              ))
+            }
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ LA CARTE ============ -->
-  <section class="section on-light cats" aria-labelledby="cats-title">
-    <div class="container">
-      <div class="section-head section-head--center">
-        <span class="eyebrow">La carte</span>
-        <h2 id="cats-title" class="h-1" data-split>Il y en a pour <span class="serif">toutes les faims.</span></h2>
-        <p class="lead muted" data-reveal>Pizzas, menus, pâtes, salades, paninis, desserts et boissons fraîches.</p>
+  <!-- ============ SIGNATURES ============ -->
+  <section class="sec sig" aria-labelledby="sig-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">La carte</span>
+          <h2 id="sig-title" class="h2">Nos pizzas<em class="grad block">signatures.</em></h2>
+        </div>
+        <div class="side">
+          Trois tailles, un même soin&nbsp;: Junior pour les petites faims, Senior pour soi, Méga pour partager.<br />
+          <a class="link-arrow" href="/carte/pizzas/">Voir les {PIZZAS.length} pizzas <Icon name="arrow" /></a>
+        </div>
       </div>
-      <ul class="cats__grid">
-        {
-          categoryTiles.map((c, i) => (
-            <li data-reveal data-delay={(i % 4) * 0.06}>
-              <a href={`/carte/${c.slug}/`} class:list={['cat tilt', { 'cat--big': i === 0 }]} data-tilt-max="8">
-                <span class="tilt__glare" />
-                <span class="cat__art tilt__pop" set:html={c.art} />
-                <span class="cat__info">
-                  <span class="cat__name">{c.name}</span>
-                  <span class="cat__meta">
-                    {c.count} choix · dès {formatPrice(c.from)}
-                  </span>
-                </span>
-                <span class="cat__arrow">
-                  <Icon name="arrow-up-right" size={22} />
-                </span>
-              </a>
-            </li>
-          ))
-        }
-        <li class="cats__cta" data-reveal data-delay="0.12">
-          <a href="/carte/" class="cat cat--cta">
-            <span class="cat__cta-title">Toute la carte <span class="serif">d'un coup d'œil</span></span>
-            <span class="cat__meta">Pizzas, menus, pâtes, salades, paninis, desserts & boissons</span>
-            <span class="cat__arrow"><Icon name="arrow-up-right" size={22} /></span>
-          </a>
-        </li>
+      <ul class="cards">
+        {signatures.map((p, i) => <li class="rv" style={`--d:${i}`}><PizzaCard pizza={p} label={sigLabels[i]} /></li>)}
       </ul>
     </div>
   </section>
 
-  <!-- ============ COMMENT COMMANDER ============ -->
-  <section class="section steps" aria-labelledby="steps-title">
-    <div class="container">
-      <div class="section-head">
-        <span class="eyebrow">Commander en 3 étapes</span>
-        <h2 id="steps-title" class="h-1" data-split>Simple, rapide, <span class="serif text-saffron">délicieux.</span></h2>
+  <!-- ============ CINÉMA ============ -->
+  <section class="cine" data-cine aria-labelledby="cine-title">
+    <div class="cine__media" data-cine-media>
+      <Photo src={photo('ambiance-four')} alt="Pizza sortant d'un four à bois en flammes" sizes="100vw" class="cine__img" />
+    </div>
+    <div class="wrap cine__copy">
+      <span class="eyebrow rv">Fait maison</span>
+      <h2 id="cine-title" class="h2 rv" style="--d:1">Pétrie sur place,<em class="grad block">cuite minute.</em></h2>
+      <p class="lead rv" style="--d:2">Une pâte qui prend le temps de reposer, un four qui ne refroidit jamais, et des pizzas qui sortent brûlantes, dorées, prêtes à partager.</p>
+      <div class="stats rv" style="--d:3">
+        <div class="stat"><b>3 <em>tailles</em></b><span>Junior · Senior · Méga</span></div>
+        <div class="stat"><b>{PIZZAS.length} <em>recettes</em></b><span>De la Reine à la Chilly</span></div>
+        <div class="stat"><b>7<em>j</em>/7</b><span>Midi &amp; soir</span></div>
       </div>
-      <ol class="steps__list">
-        <li class="step" data-reveal>
-          <span class="step__num">01</span>
-          <span class="step__icon"><Icon name="search" size={28} /></span>
-          <h3 class="h-3">Choisissez</h3>
-          <p class="muted">Parcourez la carte et composez votre panier : pizzas, menus, desserts…</p>
-        </li>
-        <li class="step" data-reveal data-delay="0.1">
-          <span class="step__num">02</span>
-          <span class="step__icon"><Icon name="phone" size={28} /></span>
-          <h3 class="h-3">Appelez-nous</h3>
-          <p class="muted">Passez commande au <a href={telHref} class="text-saffron">{SITE.phone}</a>, en livraison ou à emporter.</p>
-        </li>
-        <li class="step" data-reveal data-delay="0.2">
-          <span class="step__num">03</span>
-          <span class="step__icon"><Icon name="heart" size={28} /></span>
-          <h3 class="h-3">Régalez-vous</h3>
-          <p class="muted">Votre commande est préparée à la minute et livrée bien chaude chez vous.</p>
-        </li>
-      </ol>
     </div>
   </section>
 
-  <!-- ============ LIVRAISON ============ -->
-  <section class="section on-light zone" aria-labelledby="zone-title">
-    <div class="container zone__grid">
-      <div class="zone__text">
-        <span class="eyebrow">Zone de livraison</span>
-        <h2 id="zone-title" class="h-1" data-split>On livre <span class="serif">autour de chez vous.</span></h2>
-        <p class="lead muted" data-reveal>
-          Livraison gratuite dans un rayon de {SITE.delivery.radiusKm} km autour de {SITE.address.city}, dès {SITE.delivery.minOrder} € de commande.
-        </p>
-        <ul class="zone__towns" data-reveal>
-          {SITE.zones.map((z) => <li class="chip"><Icon name="pin" size={16} /> {z}</li>)}
+  <!-- ============ MENUS, PÂTES, DESSERTS ============ -->
+  <section class="sec" aria-labelledby="menus-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">Au-delà des pizzas</span>
+          <h2 id="menus-title" class="h2">Menus, pâtes<em class="grad block">&amp; douceurs.</em></h2>
+        </div>
+        <div class="side">
+          Des formules pensées pour partager, des pâtes gratinées et des desserts pour finir en beauté.<br />
+          <a class="link-arrow" href="/carte/">Toute la carte <Icon name="arrow" /></a>
+        </div>
+      </div>
+      <div class="menu-grid">
+        <ul class="combos">
+          {combos.map((m, i) => <li class="rv" style={`--d:${i}`}><ItemCard item={m} category="menus" variant="combo" /></li>)}
         </ul>
-        <a href="/livraison/" class="btn" data-reveal>Tout savoir sur la livraison <Icon name="arrow" /></a>
-      </div>
-      <div class="zone__radar" aria-hidden="true">
-        <div class="radar">
-          <span class="radar__ring" style="--s: 1"></span>
-          <span class="radar__ring" style="--s: 0.72"></span>
-          <span class="radar__ring" style="--s: 0.44"></span>
-          <span class="radar__sweep"></span>
-          {radarDots.map(([x, y]) => <span class="radar__dot" style={`left:${x}%; top:${y}%`} />)}
-          <span class="radar__center">
-            <svg viewBox="0 0 64 64"><path d="M9.5 19.5c14.8-5.6 30.2-5.6 45 0L35.2 56.6c-1.4 2.6-5 2.6-6.4 0L9.5 19.5Z" fill="#ffb42e" /><path d="M6.5 17.8c16.4-7.1 34.6-7.1 51 0" fill="none" stroke="#ff4d1f" stroke-width="7.5" stroke-linecap="round" /><circle cx="24.2" cy="27.6" r="3.9" fill="#ff4d1f" /><circle cx="39.8" cy="27.6" r="3.9" fill="#ff4d1f" /><path d="M24.5 36.2c4.6 4.6 10.4 4.6 15 0" fill="none" stroke="#120c0a" stroke-width="3.4" stroke-linecap="round" /></svg>
-          </span>
-          <span class="radar__label">{SITE.delivery.radiusKm} km</span>
+        <div class="lists rv" style="--d:1">
+          <div>
+            <h3 class="list__h"><a href="/carte/pates/">Pâtes</a> <small>Gratinées</small></h3>
+            {pates.items.map((it) => <ItemCard item={it} category="pates" headingLevel="h3" />)}
+          </div>
+          <div>
+            <h3 class="list__h"><a href="/carte/desserts/">Desserts</a> <small>Gourmands</small></h3>
+            {desserts.items.slice(0, 3).map((it) => <ItemCard item={it} category="desserts" headingLevel="h3" />)}
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ HORAIRES ============ -->
-  <section class="section hours-sec" aria-labelledby="hours-title">
-    <div class="container hours-sec__grid">
-      <div>
-        <span class="eyebrow">Horaires & adresse</span>
-        <h2 id="hours-title" class="h-1" data-split>Midi & soir, <span class="serif text-saffron">7 jours sur 7.</span></h2>
-        <address class="hours-sec__addr" data-reveal>
-          <Icon name="pin" />
-          <span>{SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</span>
-        </address>
-        <div class="hours-sec__ctas" data-reveal>
-          <a href="/contact/" class="btn btn--ghost">Itinéraire & contact <Icon name="arrow" /></a>
+  <!-- ============ LIVRAISON & HORAIRES ============ -->
+  <section class="sec" id="livraison" style="padding-top:0" aria-labelledby="liv-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">Livraison &amp; horaires</span>
+          <h2 id="liv-title" class="h2">On vous livre,<em class="grad block">c'est offert.</em></h2>
+        </div>
+        <div class="side">Livraison gratuite dans un rayon de {SITE.delivery.radiusKm} km autour de {SITE.address.city}, dès {SITE.delivery.minOrder} € de commande.</div>
+      </div>
+      <div class="deliv">
+        <div class="panel rv">
+          <div class="radius">
+            <div class="radar" aria-hidden="true">
+              <div class="radar__sweep"></div>
+              <svg viewBox="0 0 300 300">
+                <defs><radialGradient id="g-zone" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FF6A25" stop-opacity=".22"></stop><stop offset=".7" stop-color="#FF5A1F" stop-opacity=".07"></stop><stop offset="1" stop-color="#FF5A1F" stop-opacity="0"></stop></radialGradient></defs>
+                <circle cx="150" cy="150" r="104" fill="url(#g-zone)"></circle>
+                <circle cx="150" cy="150" r="26" fill="none" stroke="rgba(255,226,204,.12)"></circle>
+                <circle cx="150" cy="150" r="52" fill="none" stroke="rgba(255,226,204,.10)"></circle>
+                <circle cx="150" cy="150" r="78" fill="none" stroke="rgba(255,226,204,.09)"></circle>
+                <circle cx="150" cy="150" r="104" fill="none" stroke="#FF7A2E" stroke-width="1.4" stroke-dasharray="3 5"></circle>
+                <circle cx="150" cy="150" r="140" fill="none" stroke="rgba(255,226,204,.05)"></circle>
+                <path d="M150 40v220M40 150h220" stroke="rgba(255,226,204,.06)"></path>
+                <g font-family="Manrope, sans-serif" font-size="8.5" font-weight="700" fill="rgba(246,239,231,.42)" text-anchor="middle"><text x="176" y="163">2</text><text x="202" y="163">4</text><text x="228" y="163">6</text></g>
+                <circle cx="223.5" cy="76.5" r="3.5" fill="#FF8A3D"></circle>
+                <rect x="230" y="56" width="50" height="22" rx="11" fill="#FF5A1F"></rect>
+                <text x="255" y="71" text-anchor="middle" font-family="Manrope, sans-serif" font-size="11" font-weight="800" fill="#170903">{SITE.delivery.radiusKm} km</text>
+                <circle cx="150" cy="150" r="14" fill="rgba(255,90,31,.18)"><animate attributeName="r" values="8;22;8" dur="2.6s" repeatCount="indefinite"></animate><animate attributeName="opacity" values="1;0;1" dur="2.6s" repeatCount="indefinite"></animate></circle>
+                <circle cx="150" cy="150" r="6" fill="#FFE2B8" stroke="#FF5A1F" stroke-width="3"></circle>
+              </svg>
+            </div>
+            <div>
+              <h3 class="panel__t">Livraison <em>offerte</em></h3>
+              <div class="facts">
+                <div class="fact"><span class="ic"><Icon name="scooter" /></span><div><b>Gratuite jusqu'à {SITE.delivery.radiusKm} km</b><span>Autour de {SITE.address.city}</span></div></div>
+                <div class="fact"><span class="ic"><Icon name="euro" /></span><div><b>Dès {SITE.delivery.minOrder} € d'achat</b><span>Minimum pour être livré</span></div></div>
+                <div class="fact"><span class="ic"><Icon name="card" /></span><div><b>CB, espèces, titres-resto</b><span>Paiement à la livraison ou sur place</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="zones">
+            <h4>Communes livrées</h4>
+            <ul>{SITE.zones.map((z, i) => <li class:list={{ me: i === 0 }}>{z}</li>)}</ul>
+          </div>
+        </div>
+        <div class="panel rv" style="--d:1" data-hours data-schedule={JSON.stringify(SITE.hours.map((d) => d.slots))}>
+          <div class="panel__head"><h3 class="panel__t">Horaires</h3><span class="status" data-status><i></i><span>Ouvert 7j/7</span></span></div>
+          <ul class="hours">
+            {
+              SITE.hours.map((d, i) => (
+                <li data-day={i}>
+                  <span>{d.day}</span>
+                  <span class="sl">{d.slots.length ? d.slots.map(([a, b]) => <i>{`${fmt(a)} – ${fmt(b)}`}</i>) : <i>Fermé</i>}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <div class="addr">
+            <p><b>{SITE.address.street}</b>{SITE.address.postalCode} {SITE.address.city}</p>
+            <a class="btn btn-glass btn-sm" href={mapsUrl} target="_blank" rel="noopener"><Icon name="pin" />Itinéraire</a>
+          </div>
         </div>
       </div>
-      <div data-reveal><Hours /></div>
     </div>
   </section>
 
   <!-- ============ FAQ ============ -->
-  <section class="section on-light" aria-labelledby="faq-title">
-    <div class="container faq-grid">
-      <div class="section-head">
+  <section class="sec" style="padding-top:0" aria-labelledby="faq-title">
+    <div class="wrap faq-grid">
+      <div>
         <span class="eyebrow">Questions fréquentes</span>
-        <h2 id="faq-title" class="h-1" data-split>Vous vous <span class="serif">demandez…</span></h2>
-        <p class="lead muted" data-reveal>Une autre question ? Appelez-nous au <a href={telHref}><strong>{SITE.phone}</strong></a>.</p>
+        <h2 id="faq-title" class="h2">Bon<em class="grad block">à savoir.</em></h2>
+        <p class="lead">Une autre question&nbsp;? Appelez-nous au <a href={telHref}><strong>{SITE.phone}</strong></a>.</p>
       </div>
-      <Faq items={FAQS} />
+      <div class="rv"><Faq items={FAQS} /></div>
+    </div>
+  </section>
+
+  <!-- ============ APPEL FINAL ============ -->
+  <section class="final" data-final aria-labelledby="final-title">
+    <div class="wrap">
+      <span class="eyebrow final__eb">Une petite faim&nbsp;?</span>
+      <h2 id="final-title" class="h2">Le four est chaud, <em class="grad">il n'attend que vous.</em></h2>
+      <a class="bigtel" href={telHref}>{SITE.phone}</a>
+      <p class="final__sub">Commandez par téléphone — livraison offerte jusqu'à {SITE.delivery.radiusKm} km, ou retrait sur place.</p>
+      <div class="ctas final__ctas">
+        <a class="btn btn-ember" href={telHref}><Icon name="phone" stroke={2} />Appeler maintenant</a>
+        <a class="btn btn-glass" href="/carte/">Voir la carte</a>
+      </div>
+    </div>
+    <div class="sun" aria-hidden="true">
+      <div class="sun__glow"></div>
+      <div class="sun__tilt">
+        <div class="sun__disc" data-sun>
+          <img src={sunImg} alt="" style="transform:translateZ(-12px);filter:brightness(.2) sepia(.4)" loading="lazy" />
+          <img src={sunImg} alt="" style="transform:translateZ(-8px);filter:brightness(.4) sepia(.3)" loading="lazy" />
+          <img src={sunImg} alt="" style="transform:translateZ(-4px);filter:brightness(.65) sepia(.15)" loading="lazy" />
+          <img src={sunImg} alt="" style="filter:saturate(1.05) contrast(1.05)" loading="lazy" />
+        </div>
+        <div class="sun__shade"></div>
+      </div>
     </div>
   </section>
 </Base>
@@ -341,942 +348,886 @@ const marquee = ['Pâte fraîche du jour', 'Mozzarella fondante', `Livraison gra
   /* ---------- HERO ---------- */
   .hero {
     position: relative;
-    min-height: 100svh;
-    min-height: max(100svh, 680px);
-    display: grid;
-    align-items: center;
-    padding-top: var(--header-h);
-    overflow: hidden;
-    isolation: isolate;
   }
-  .hero__bg {
+  .stage-track {
     position: absolute;
     inset: 0;
-    z-index: -2;
-    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
   }
-  .hero__glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(90px);
-  }
-  .hero__glow--1 {
-    width: 60vw;
-    height: 60vw;
-    right: -12vw;
-    top: 5%;
-    background: radial-gradient(circle, rgba(255, 77, 31, 0.5), transparent 65%);
-  }
-  .hero__glow--2 {
-    width: 40vw;
-    height: 40vw;
-    left: -10vw;
-    bottom: -20%;
-    background: radial-gradient(circle, rgba(255, 180, 46, 0.22), transparent 65%);
-  }
-  .hero__word {
-    position: absolute;
-    left: 50%;
-    bottom: -0.16em;
-    transform: translateX(-50%);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(9rem, 30vw, 30rem);
-    letter-spacing: -0.07em;
-    line-height: 0.8;
-    color: transparent;
-    -webkit-text-stroke: 1.5px rgba(255, 246, 234, 0.09);
-    white-space: nowrap;
-    user-select: none;
-  }
-  .hero__stage {
-    position: absolute;
-    z-index: -1;
+  .stage {
+    position: sticky;
     top: 0;
-    bottom: 0;
-    right: -7vw;
-    width: min(60vw, 960px);
-    display: grid;
-    place-items: center;
+    height: var(--vh, 100vh);
+    overflow: clip;
   }
-  .hero__canvas {
+  .stage__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(90% 60% at 72% 118%, rgba(255, 78, 18, 0.2), transparent 62%),
+      radial-gradient(50% 50% at 8% 0%, rgba(255, 150, 80, 0.05), transparent 70%),
+      linear-gradient(180deg, #0c0907 0%, #0a0706 100%);
+  }
+  .stage::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 22%;
+    background: linear-gradient(180deg, transparent, var(--bg));
+    z-index: 5;
+  }
+  .sparks {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
-    transition: opacity 0.9s var(--ease-out);
+    z-index: 4;
   }
-  :global(.has-webgl) .hero__canvas {
-    opacity: 1;
+  .pz {
+    --size: min(49vw, 720px, 78vh);
+    position: absolute;
+    left: 72.5%;
+    top: 54%;
+    width: var(--size);
+    height: var(--size);
+    perspective: 1800px;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    z-index: 2;
   }
-  .hero__fallback {
-    width: min(78%, 560px);
-    filter: drop-shadow(0 40px 50px rgba(0, 0, 0, 0.55));
-    animation: spin 60s linear infinite;
-    transition: opacity 0.9s var(--ease-out);
+  .pz__glow {
+    position: absolute;
+    inset: -48%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 150, 70, 0.62), rgba(255, 92, 28, 0.3) 38%, rgba(255, 64, 12, 0.1) 62%, transparent 80%);
+    opacity: 0.85;
   }
-  :global(.has-webgl) .hero__fallback {
-    opacity: 0;
+  .pz__shadow {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.6) 55%, transparent);
+    filter: blur(26px);
+  }
+  .pz__tilt {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(56deg);
+  }
+  .pz__rings {
+    position: absolute;
+    inset: -34%;
+    transform: translateZ(-60px);
+  }
+  .pz__rings svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .pz__spin {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .pz__spin img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    clip-path: circle(49.2%);
+    user-select: none;
+  }
+  .pz__edge {
+    position: absolute;
+    inset: 0.9%;
+    border-radius: 50%;
+  }
+  .pz__light {
+    position: absolute;
+    inset: 0.8%;
+    border-radius: 50%;
+    transform: translateZ(1.5px);
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255, 228, 196, 0.2), transparent 42%),
+      radial-gradient(circle at 72% 86%, rgba(24, 6, 0, 0.42), transparent 52%);
+    box-shadow:
+      inset 0 3px 2px -1px rgba(255, 214, 170, 0.28),
+      inset 0 -10px 24px -6px rgba(0, 0, 0, 0.45);
+  }
+  .hot {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 56px;
+    height: 56px;
+    margin: -28px 0 0 -28px;
+    transform: translateZ(3px);
+    opacity: var(--hot, 0);
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 30%, rgba(10, 6, 4, 0.35) 31%);
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 236, 220, 0.85),
+      0 6px 24px rgba(0, 0, 0, 0.5);
+  }
+  .hot::before {
+    content: '';
+    position: absolute;
+    inset: 21px;
+    border-radius: 50%;
+    background: #fff4e6;
+    box-shadow:
+      0 0 0 4px rgba(255, 90, 31, 0.85),
+      0 0 24px 8px rgba(255, 110, 40, 0.8);
+  }
+  .hot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 190, 140, 0.9);
+    animation: ping 2.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+  .hot:global(.hl) {
+    box-shadow:
+      inset 0 0 0 2px var(--gold),
+      0 0 40px 6px rgba(255, 110, 40, 0.6);
+  }
+  .hot b {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 40px;
+    height: 26px;
+    margin: -13px 0 0 -20px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(14, 9, 7, 0.72);
+    border: 1px solid rgba(255, 200, 160, 0.35);
+    font: italic 400 16px/1 var(--serif);
+    color: var(--gold);
+    transform: rotateZ(calc(var(--rz, 0deg) * -1)) translateY(-46px);
+  }
+  @keyframes ping {
+    to {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+  }
+  .pz__tag {
+    position: absolute;
+    right: -3%;
+    top: 4%;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px 10px 10px;
+    border-radius: 18px;
+    background: rgba(20, 14, 11, 0.55);
+    border: 1px solid var(--line-2);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.8);
+  }
+  .pz__ring {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle, rgba(255, 120, 50, 0.35), rgba(255, 90, 31, 0.08));
+    border: 1px solid rgba(255, 140, 70, 0.4);
+    font: italic 400 20px/1 var(--serif);
+    color: var(--gold);
+  }
+  .pz__tag small {
+    display: block;
+    font: 700 10px/1 var(--sans);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .pz__tag b {
+    font: 700 24px/1 var(--display);
+    letter-spacing: -0.04em;
+  }
+  .pz__tag b span {
+    color: var(--gold);
+  }
+  .hero__screen {
+    position: relative;
+    z-index: 6;
+    min-height: var(--vh, 100vh);
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--hdr);
+  }
+  .hero__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 700px;
+    padding: 28px 0 24px;
+  }
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    align-self: flex-start;
+    padding: 8px 16px 8px 10px;
+    border-radius: 999px;
+    background: rgba(255, 240, 228, 0.04);
+    border: 1px solid var(--line);
+    font: 600 12.5px/1 var(--sans);
+    letter-spacing: 0.04em;
+    color: #d8cabd;
+  }
+  .kicker i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ember);
+    box-shadow:
+      0 0 0 4px rgba(255, 90, 31, 0.18),
+      0 0 14px 2px rgba(255, 90, 31, 0.9);
+  }
+  .hero__title {
+    margin-top: 30px;
+  }
+  .hero__title > span:not(.sr-only) {
+    display: block;
+  }
+  .hero__title em {
+    display: block;
+    font-size: 1.2em;
+    line-height: 0.96;
+    margin-top: 0.02em;
+    filter: drop-shadow(0 0 34px rgba(255, 90, 31, 0.28));
+  }
+  .trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0 0 34px;
+  }
+  .scroll-cue {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font: 700 10.5px/1 var(--sans);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--dim);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+  .scroll-cue::after {
+    content: '';
+    width: 1px;
+    height: 64px;
+    background: linear-gradient(180deg, transparent, var(--ember-2));
+    animation: cue 2.2s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes cue {
+    0% {
+      transform: scaleY(0);
+    }
+    60% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  .story {
+    position: relative;
+    z-index: 6;
+    min-height: var(--vh, 100vh);
+    display: flex;
+    align-items: center;
+    padding: calc(var(--hdr) + 20px) 0 60px;
+  }
+  .story__copy {
+    max-width: 520px;
+  }
+  .legend {
+    margin-top: 34px;
+    border-top: 1px solid var(--line);
+  }
+  .legend li {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    column-gap: 10px;
+    padding: 17px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .legend li:hover b {
+    color: var(--gold);
+  }
+  .legend .n {
+    grid-row: span 2;
+    font: italic 400 28px/1 var(--serif);
+    color: var(--ember-2);
+    padding-top: 2px;
+  }
+  .legend b {
+    font: 600 18px/1.25 var(--display);
+    letter-spacing: -0.015em;
+    transition: color 0.3s;
+  }
+  .legend p {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  /* ---------- BANDEAU ---------- */
+  .marquee {
+    position: relative;
+    z-index: 2;
+    border-block: 1px solid var(--line);
+    padding: 26px 0;
+    overflow: clip;
+    background: linear-gradient(180deg, var(--bg), #0c0907);
+  }
+  .mq {
+    display: flex;
+    width: max-content;
+    animation: mq 46s linear infinite;
+  }
+  .mq__g {
+    display: flex;
+    align-items: center;
+    gap: 44px;
+    padding-right: 44px;
+  }
+  .mq__g span {
+    font: 600 30px/1 var(--display);
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    color: #e9ded3;
+  }
+  .mq__g em {
+    font: italic 400 36px/1 var(--serif);
+    color: var(--ember-2);
+    white-space: nowrap;
+  }
+  .mq__g i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ember);
+    box-shadow: 0 0 14px 3px rgba(255, 90, 31, 0.7);
+    flex: none;
+  }
+  @keyframes mq {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ---------- OFFRE ---------- */
+  .offer__panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.02fr 1fr;
+    min-height: 660px;
+    border-radius: 40px;
+    overflow: clip;
+    isolation: isolate;
+    background:
+      radial-gradient(70% 80% at 80% 58%, rgba(255, 86, 24, 0.3), rgba(255, 86, 24, 0.05) 55%, transparent 72%),
+      linear-gradient(150deg, #1b1411 0%, #110c0a 55%, #0d0908 100%);
+    border: 1px solid rgba(255, 190, 150, 0.12);
+    box-shadow: 0 60px 120px -60px rgba(0, 0, 0, 0.9);
+  }
+  .offer__num {
+    position: absolute;
+    right: -3%;
+    top: 50%;
+    transform: translateY(-52%);
+    font: 800 clamp(300px, 40vw, 600px) / 0.8 var(--display);
+    letter-spacing: -0.08em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(255, 150, 90, 0.1);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .offer__copy {
+    padding: clamp(40px, 6vw, 88px);
+    align-self: center;
+    position: relative;
+    z-index: 2;
+  }
+  .offer__title {
+    font-size: clamp(44px, 5.6vw, 86px);
+  }
+  .nw {
+    white-space: nowrap;
+  }
+  .conds {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .conds li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px 9px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line-2);
+    background: rgba(255, 240, 228, 0.035);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #e1d5c9;
+  }
+  .conds :global(.i) {
+    color: var(--ember-2);
+  }
+  .conds .x :global(.i) {
+    color: var(--dim);
+  }
+  .offer__visual {
+    position: relative;
+    perspective: 1500px;
+    min-height: 520px;
+  }
+  .stack {
+    position: absolute;
+    left: 48%;
+    top: 52%;
+    width: min(31vw, 430px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    transform-style: preserve-3d;
+  }
+  .dw,
+  .disc {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .disc {
+    transform: rotateX(62deg);
+  }
+  .disc img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    clip-path: circle(49.2%);
+  }
+  .disc__sh {
+    position: absolute;
+    inset: -4%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.4) 60%, transparent);
+    filter: blur(14px);
+    transform: translateZ(-34px);
+  }
+  .disc__em {
+    position: absolute;
+    inset: -30%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 140, 60, 0.75), rgba(255, 80, 20, 0.3) 45%, transparent 75%);
+    filter: blur(6px);
+    transform: translateZ(-50px);
+  }
+  .disc__lt {
+    position: absolute;
+    inset: 0.8%;
+    border-radius: 50%;
+    transform: translateZ(1px);
+    background:
+      radial-gradient(circle at 30% 22%, rgba(255, 228, 196, 0.16), transparent 45%),
+      radial-gradient(circle at 70% 84%, rgba(20, 6, 0, 0.4), transparent 55%);
+  }
+  .dtag {
+    position: absolute;
+    top: 50%;
+    left: 88%;
+    transform: translate3d(0, -50%, 40px);
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px 8px 8px;
+    border-radius: 999px;
+    background: rgba(18, 12, 10, 0.6);
+    border: 1px solid var(--line-2);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    font: 700 13px/1 var(--sans);
+    white-space: nowrap;
+  }
+  .dtag i {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font: italic 400 16px/1 var(--serif);
+    background: rgba(255, 240, 228, 0.08);
+  }
+  .dtag--hot {
+    background: var(--grad-btn);
+    color: #170903;
+    border-color: transparent;
+    box-shadow: 0 14px 40px -10px rgba(255, 90, 31, 0.8);
+  }
+  .dtag--hot i {
+    background: rgba(23, 9, 3, 0.14);
+  }
+  .dtag--l {
+    left: auto;
+    right: 88%;
+  }
+
+  /* ---------- SIGNATURES ---------- */
+  .sig {
+    padding-top: 0;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  /* ---------- CINÉMA ---------- */
+  .cine {
+    position: relative;
+    height: min(94vh, 880px);
+    min-height: 620px;
+    overflow: clip;
+    display: flex;
+    align-items: flex-start;
+    isolation: isolate;
+  }
+  .cine__media {
+    position: absolute;
+    inset: -10% 0;
+    z-index: -2;
+  }
+  .cine__media :global(picture),
+  .cine__media :global(.cine__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 62% 58%;
+  }
+  .cine::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(10, 8, 7, 0.92) 0%, rgba(10, 8, 7, 0.7) 30%, rgba(10, 8, 7, 0.08) 62%, rgba(10, 8, 7, 0.25) 100%),
+      linear-gradient(180deg, var(--bg) 0%, rgba(10, 8, 7, 0) 22%, rgba(10, 8, 7, 0) 70%, var(--bg) 100%);
+  }
+  .cine__copy {
+    padding-top: clamp(90px, 10vw, 150px);
+  }
+  .cine .h2 {
+    max-width: 640px;
+  }
+  .stats {
+    display: flex;
+    gap: 14px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    padding: 18px 22px;
+    border-radius: 20px;
+    background: rgba(14, 10, 8, 0.5);
+    border: 1px solid var(--line-2);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    min-width: 150px;
+  }
+  .stat b {
+    display: block;
+    font: 700 34px/1 var(--display);
+    letter-spacing: -0.04em;
+  }
+  .stat em {
+    font: italic 400 1.1em/1 var(--serif);
+    letter-spacing: 0;
+    color: var(--gold);
+  }
+  .stat span {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ---------- MENUS ---------- */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 22px;
+  }
+  .combos {
+    display: grid;
+    gap: 22px;
+  }
+  .lists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(24px, 3vw, 44px);
+    padding: clamp(28px, 3vw, 44px);
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255, 240, 228, 0.03), rgba(255, 240, 228, 0.01));
+  }
+  .list__h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font: italic 400 40px/1 var(--serif);
+  }
+  .list__h a:hover {
+    color: var(--gold);
+  }
+  .list__h small {
+    font: 700 10.5px/1 var(--sans);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-style: normal;
+  }
+
+  /* ---------- LIVRAISON ---------- */
+  .deliv {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    gap: 22px;
+  }
+  .panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .panel__t {
+    font: 700 28px/1 var(--display);
+    letter-spacing: -0.035em;
+    margin-bottom: 22px;
+  }
+  .panel__head .panel__t {
+    margin: 0;
+  }
+  .panel__t em {
+    font: italic 400 1.15em/1 var(--serif);
+    color: var(--ember-2);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font: 700 12.5px/1 var(--sans);
+    background: rgba(90, 200, 120, 0.08);
+    color: #9ee3b0;
+    border: 1px solid rgba(120, 220, 150, 0.2);
+  }
+  .status i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #6fe08f;
+    box-shadow: 0 0 10px 2px rgba(111, 224, 143, 0.7);
+  }
+  .status:global(.closed) {
+    background: rgba(255, 90, 31, 0.08);
+    color: var(--gold);
+    border-color: rgba(255, 140, 70, 0.25);
+  }
+  .status:global(.closed) i {
+    background: var(--ember);
+    box-shadow: 0 0 10px 2px rgba(255, 90, 31, 0.7);
+  }
+  .radius {
+    display: grid;
+    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 44px);
+    align-items: center;
+  }
+  .radar {
+    position: relative;
+    aspect-ratio: 1;
+    width: 100%;
+  }
+  .radar svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .radar__sweep {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg 290deg, rgba(255, 110, 40, 0.28) 360deg);
+    -webkit-mask: radial-gradient(closest-side, #000 0 69.2%, transparent 69.6%);
+    mask: radial-gradient(closest-side, #000 0 69.2%, transparent 69.6%);
+    animation: spin 6s linear infinite;
   }
   @keyframes spin {
     to {
       transform: rotate(360deg);
     }
   }
-  .hero__content {
-    position: relative;
+  .fact {
     display: grid;
-    gap: 28px;
-    padding-block: 60px 120px;
+    grid-template-columns: 44px 1fr;
+    gap: 14px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
   }
-  .hero__title {
-    display: grid;
-    gap: 22px;
-    max-width: 11ch;
-    font-size: clamp(3.4rem, 9vw, 8.6rem);
-    line-height: 0.9;
-    letter-spacing: -0.055em;
+  .fact:first-child {
+    padding-top: 0;
   }
-  .hero__eyebrow {
-    font-size: 0.82rem;
-    letter-spacing: 0.2em;
-    line-height: 1.3;
+  .fact:last-child {
+    border-bottom: 0;
   }
-  .hero__headline .serif {
-    font-size: 1.08em;
-    letter-spacing: -0.03em;
-  }
-  .hero__lead {
-    max-width: 44ch;
-    color: var(--muted-on-dark);
-  }
-  .hero__ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .hero__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .hero__sticker {
-    position: absolute;
-    right: clamp(16px, 6vw, 90px);
-    bottom: clamp(90px, 14vh, 150px);
-    width: 150px;
-    aspect-ratio: 1;
+  .fact .ic {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     display: grid;
     place-items: center;
-    border-radius: 50%;
-    background: var(--saffron);
-    color: var(--ink);
-    box-shadow: 0 24px 50px -16px rgba(255, 180, 46, 0.55);
-    transition: transform 0.6s var(--ease-spring);
+    color: var(--ember-2);
+    background: rgba(255, 90, 31, 0.08);
+    border: 1px solid rgba(255, 130, 60, 0.18);
   }
-  .hero__sticker:hover {
-    transform: scale(1.08) rotate(-8deg);
-  }
-  .hero__sticker-ring {
-    position: absolute;
-    inset: 0;
-    animation: spin 18s linear infinite;
-  }
-  .hero__sticker-ring text {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 15.5px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    fill: var(--ink);
-  }
-  .hero__sticker-core {
-    display: grid;
-    justify-items: center;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 2.6rem;
-    line-height: 0.8;
-    letter-spacing: -0.05em;
-  }
-  .hero__sticker-core sup {
-    font-size: 0.45em;
-    position: absolute;
-    margin-left: 1.3em;
-    margin-top: 0.1em;
-  }
-  .hero__sticker-core small {
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
-  .hero__scroll {
-    position: absolute;
-    left: 50%;
-    bottom: 22px;
-    transform: translateX(-50%);
-    display: grid;
-    justify-items: center;
-    gap: 10px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted-on-dark);
-  }
-  .hero__scroll-line {
-    width: 1.5px;
-    height: 44px;
-    background: linear-gradient(var(--cream), transparent);
-    transform-origin: top;
-    animation: scrollLine 2.2s var(--ease-out) infinite;
-  }
-  @keyframes scrollLine {
-    0% {
-      transform: scaleY(0);
-    }
-    50% {
-      transform: scaleY(1);
-      transform-origin: top;
-    }
-    51% {
-      transform-origin: bottom;
-    }
-    100% {
-      transform: scaleY(0);
-      transform-origin: bottom;
-    }
-  }
-  @media (max-width: 900px) {
-    .hero {
-      align-items: start;
-    }
-    .hero__stage {
-      top: auto;
-      right: 50%;
-      transform: translateX(50%);
-      width: 130vw;
-      height: 62svh;
-      bottom: -4svh;
-    }
-    .hero__content {
-      padding-block: 36px 50svh;
-    }
-    .hero__title {
-      max-width: 100%;
-      font-size: clamp(3.1rem, 14vw, 5.5rem);
-    }
-    .hero__chips {
-      display: none;
-    }
-    .hero__sticker {
-      width: 112px;
-      bottom: 20svh;
-    }
-    .hero__sticker-core {
-      font-size: 2rem;
-    }
-    .hero__sticker-ring text {
-      font-size: 16px;
-    }
-    .hero__scroll {
-      display: none;
-    }
-  }
-
-  /* ---------- BANDEAU ---------- */
-  .band-wrap {
-    position: relative;
-    z-index: 2;
-    overflow-x: clip;
-    padding-block: 30px;
-    margin-block: -50px;
-  }
-  .band {
-    position: relative;
-    z-index: 2;
-    background: var(--tomato);
-    color: var(--cream);
-    padding-block: 18px;
-    transform: rotate(-2deg) scale(1.04);
-    margin-block: -20px;
-    box-shadow: 0 20px 50px -20px rgba(255, 77, 31, 0.6);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+  .fact b {
+    display: block;
+    font: 700 18px/1.15 var(--display);
     letter-spacing: -0.03em;
+  }
+  .fact span {
+    display: block;
+    margin-top: 4px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .zones {
+    margin-top: 30px;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+  }
+  .zones h4 {
+    margin-bottom: 14px;
+    font: 700 10.5px/1 var(--sans);
+    letter-spacing: 0.22em;
     text-transform: uppercase;
+    color: var(--dim);
   }
-  .band :global(svg) {
-    color: var(--saffron);
-    flex: none;
+  .zones ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
   }
-  .band span {
+  .zones li {
+    padding: 8px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255, 240, 228, 0.025);
+    font-size: 13px;
+    font-weight: 600;
+    color: #d5c8bb;
+  }
+  .zones li.me {
+    border-color: rgba(255, 140, 70, 0.45);
+    color: var(--gold);
+    background: rgba(255, 90, 31, 0.08);
+  }
+  .hours li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    margin: 0 -16px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hours li:last-child {
+    border-bottom: 0;
+  }
+  .hours li > span:first-child {
+    font-weight: 600;
+    color: #e3d7cb;
+  }
+  .sl {
+    display: flex;
+    justify-content: flex-end;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .sl i {
+    font-style: normal;
     white-space: nowrap;
   }
-
-  /* ---------- SAVOIR-FAIRE ---------- */
-  .craft {
-    padding-top: clamp(110px, 14vw, 180px);
+  .sl i + i::before {
+    content: '·';
+    margin: 0 10px;
+    color: var(--dim);
   }
-  .craft__grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 48px;
-    align-items: end;
+  .hours li:global(.today) {
+    background: linear-gradient(90deg, rgba(255, 90, 31, 0.14), rgba(255, 90, 31, 0.02));
+    border-bottom-color: transparent;
+    box-shadow: inset 2px 0 0 var(--ember);
   }
-  .craft__stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px;
-    background: var(--line-light);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: clamp(40px, 6vw, 72px);
-  }
-  .craft__stats li {
-    display: grid;
-    gap: 6px;
-    padding: 26px 24px;
-    background: var(--cream);
-  }
-  .craft__stats strong {
-    font-family: var(--font-display);
-    font-size: clamp(2.6rem, 5vw, 4rem);
-    font-weight: 800;
-    line-height: 0.9;
-    letter-spacing: -0.05em;
-    color: var(--tomato);
-  }
-  .craft__stats small {
-    font-size: 0.45em;
-    margin-left: 2px;
-  }
-  .craft__stats li > span {
-    font-size: 0.92rem;
-    color: var(--muted-on-light);
-    font-weight: 600;
-  }
-  .craft__cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .craft__card {
-    position: relative;
-    display: grid;
-    gap: 14px;
-    align-content: start;
-    padding: 32px 28px;
-    border-radius: var(--radius-lg);
-    background: #fff;
-    box-shadow: 0 30px 60px -40px rgba(60, 20, 0, 0.35);
-  }
-  .craft__icon {
-    display: grid;
-    place-items: center;
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
-    background: var(--tomato);
-    color: #fff;
-    margin-bottom: 10px;
-    box-shadow: 0 14px 30px -10px var(--tomato-glow);
-  }
-  .craft__icon--basil {
-    background: var(--basil);
-    box-shadow: 0 14px 30px -10px rgba(47, 168, 102, 0.5);
-  }
-  .craft__icon--saffron {
-    background: var(--saffron);
-    color: var(--ink);
-    box-shadow: 0 14px 30px -10px rgba(255, 180, 46, 0.5);
-  }
-  @media (max-width: 900px) {
-    .craft__grid,
-    .craft__cards {
-      grid-template-columns: 1fr;
-    }
-    .craft__grid {
-      gap: 0;
-    }
-  }
-
-  /* ---------- SIGNATURES ---------- */
-  .sig {
-    position: relative;
-    background: var(--ink);
-    overflow: hidden;
-  }
-  .sig__inner {
-    min-height: 100svh;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-content: center;
-    gap: clamp(32px, 5vw, 56px);
-    padding-block: clamp(80px, 10vw, 120px);
-  }
-  .sig__head {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-  .sig__head > div {
-    display: grid;
-    gap: 16px;
-  }
-  .sig__viewport {
-    overflow: visible;
-    min-width: 0;
-  }
-  .sig__track {
-    display: flex;
-    gap: 24px;
-    padding-inline: max(var(--gutter), calc((100vw - var(--container)) / 2 + var(--gutter)));
-    width: max-content;
-  }
-  .sig__card {
-    flex: none;
-    width: clamp(300px, 30vw, 420px);
-  }
-  .sig__link {
-    position: relative;
-    display: grid;
-    gap: 20px;
-    height: 100%;
-    padding: 28px;
-    border-radius: var(--radius-lg);
-    background: linear-gradient(160deg, var(--ink-3), var(--ink-2));
-    border: 1px solid var(--line-dark);
-    overflow: hidden;
-    transition:
-      border-color 0.4s,
-      transform 0.6s var(--ease-out);
-  }
-  .sig__link::before {
-    content: '';
-    position: absolute;
-    inset: auto -30% -40% -30%;
-    height: 70%;
-    background: radial-gradient(circle, rgba(255, 77, 31, 0.28), transparent 65%);
-    opacity: 0;
-    transition: opacity 0.5s;
-  }
-  .sig__link:hover {
-    border-color: rgba(255, 180, 46, 0.5);
-    transform: translateY(-8px);
-  }
-  .sig__link:hover::before {
-    opacity: 1;
-  }
-  .sig__num {
-    position: absolute;
-    top: 20px;
-    left: 26px;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1rem;
-    color: var(--saffron);
-  }
-  .sig__art {
-    width: 82%;
-    margin: 10px auto 0;
-    filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.55));
-  }
-  .sig__meta {
-    position: relative;
-    display: grid;
-    gap: 8px;
-  }
-  .sig__base {
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
+  .hours li:global(.today) > span:first-child::after {
+    content: "Aujourd'hui";
+    margin-left: 10px;
+    font: 700 9.5px/1 var(--sans);
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--tomato);
+    color: var(--ember-2);
   }
-  .sig__name {
-    font-size: clamp(2rem, 3.2vw, 2.8rem);
+  .hours li:global(.today) .sl {
+    color: var(--text);
   }
-  .sig__ing {
-    font-size: 0.9rem;
-    color: var(--muted-on-dark);
-    min-height: 3em;
-  }
-  .sig__price {
+  .addr {
+    margin-top: 26px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 8px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line-dark);
-    color: var(--muted-on-dark);
-    font-size: 0.92rem;
-  }
-  .sig__price strong {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    color: var(--cream);
-    letter-spacing: -0.03em;
-    margin-left: 4px;
-  }
-  .sig__go {
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: var(--cream);
-    color: var(--ink);
-    transition:
-      transform 0.5s var(--ease-spring),
-      background-color 0.3s;
-  }
-  .sig__link:hover .sig__go {
-    transform: rotate(45deg);
-    background: var(--tomato);
-    color: #fff;
-  }
-  @media (max-width: 899px) {
-    .sig__viewport {
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-    .sig__viewport::-webkit-scrollbar {
-      display: none;
-    }
-    .sig__card {
-      scroll-snap-align: center;
-      width: min(82vw, 360px);
-    }
-    .sig__track {
-      padding-inline: var(--gutter);
-    }
-  }
-
-  /* ---------- OFFRE ---------- */
-  .offer__card {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: clamp(32px, 5vw, 72px);
-    align-items: center;
-    padding: clamp(32px, 6vw, 80px);
-    border-radius: clamp(28px, 4vw, 48px);
-    background:
-      radial-gradient(circle at 20% 30%, rgba(255, 180, 46, 0.2), transparent 50%),
-      linear-gradient(135deg, var(--tomato) 0%, var(--tomato-2) 100%);
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .offer__card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 1.5px);
-    background-size: 22px 22px;
-    mask-image: linear-gradient(90deg, #000, transparent 70%);
-  }
-  .offer__text {
-    display: grid;
-    gap: 22px;
-  }
-  .offer__text .eyebrow {
-    color: var(--saffron);
-  }
-  .offer__text .muted {
-    color: rgba(255, 246, 234, 0.85);
-  }
-  .offer__ctas {
-    display: flex;
+    gap: 18px;
     flex-wrap: wrap;
-    gap: 12px;
   }
-  .offer__stack {
-    position: relative;
-    aspect-ratio: 1;
-    perspective: 900px;
+  .addr p {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--muted);
   }
-  .offer__pz {
-    position: absolute;
-    width: 62%;
-    filter: drop-shadow(0 30px 30px rgba(80, 10, 0, 0.5));
-  }
-  .offer__pz--1 {
-    left: 0;
-    top: 4%;
-  }
-  .offer__pz--2 {
-    right: 0;
-    top: 16%;
-    width: 55%;
-  }
-  .offer__pz--3 {
-    left: 18%;
-    bottom: 0;
-    width: 58%;
-  }
-  .offer__free {
-    position: absolute;
-    left: 58%;
-    bottom: 12%;
-    padding: 12px 20px;
-    border-radius: 999px;
-    background: var(--saffron);
-    color: var(--ink);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1rem, 2vw, 1.5rem);
-    transform: rotate(-10deg);
-    box-shadow: 0 16px 30px -10px rgba(0, 0, 0, 0.4);
-    animation: wobble 3s ease-in-out infinite;
-  }
-  @keyframes wobble {
-    50% {
-      transform: rotate(-4deg) scale(1.06);
-    }
-  }
-  @media (max-width: 900px) {
-    .offer__card {
-      grid-template-columns: 1fr;
-    }
-    .offer__stack {
-      width: min(100%, 420px);
-      margin-inline: auto;
-    }
-  }
-
-  /* ---------- CATÉGORIES ---------- */
-  .cats__grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-  }
-  .cats__grid > li:first-child {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-  .cat {
-    position: relative;
-    display: grid;
-    grid-template-rows: 1fr auto;
-    height: 100%;
-    min-height: 250px;
-    padding: 20px;
-    border-radius: var(--radius-lg);
-    background: #fff;
-    overflow: hidden;
-    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
-  }
-  .cat--big {
-    background: var(--ink);
-    color: var(--cream);
-  }
-  .cats__cta {
-    grid-column: span 2;
-  }
-  .cat--cta {
-    align-content: end;
-    grid-template-rows: auto;
-    gap: 10px;
-    background:
-      radial-gradient(circle at 85% 15%, rgba(255, 180, 46, 0.35), transparent 50%),
-      var(--tomato);
-    color: #fff;
-  }
-  .cat--cta .cat__meta {
-    color: rgba(255, 255, 255, 0.85);
-    padding-right: 60px;
-  }
-  .cat__cta-title {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.8rem, 3vw, 2.6rem);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-  }
-  .cat--cta .cat__arrow {
-    background: var(--cream);
-    color: var(--ink);
-  }
-  .cat__art {
-    display: grid;
-    place-items: center;
-    padding: 6px 20px;
-  }
-  .cat__art :global(svg) {
-    width: min(100%, 170px);
-    transition: transform 0.9s var(--ease-spring);
-  }
-  .cat--big .cat__art :global(svg) {
-    width: min(100%, 380px);
-    filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.5));
-  }
-  .cat:hover .cat__art :global(svg) {
-    transform: scale(1.08) rotate(-10deg);
-  }
-  .cat__info {
-    display: grid;
-    gap: 2px;
-    padding-right: 52px;
-  }
-  .cat__name {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.6rem;
-    letter-spacing: -0.035em;
-    line-height: 1;
-  }
-  .cat--big .cat__name {
-    font-size: clamp(2.2rem, 4vw, 3.4rem);
-  }
-  .cat__meta {
-    font-size: 0.86rem;
-    color: var(--muted-on-light);
-    font-weight: 600;
-  }
-  .cat--big .cat__meta {
-    color: var(--muted-on-dark);
-  }
-  .cat__arrow {
-    position: absolute;
-    right: 18px;
-    bottom: 18px;
-    display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--cream);
-    transition:
-      transform 0.5s var(--ease-spring),
-      background-color 0.3s;
-  }
-  .cat--big .cat__arrow {
-    background: var(--tomato);
-  }
-  .cat:hover .cat__arrow {
-    transform: rotate(45deg) scale(1.08);
-    background: var(--tomato);
-  }
-  @media (max-width: 1000px) {
-    .cats__grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (max-width: 520px) {
-    .cats__grid {
-      gap: 10px;
-    }
-    .cat {
-      min-height: 200px;
-      padding: 14px;
-    }
-    .cat__name {
-      font-size: 1.25rem;
-    }
-    .cat__arrow {
-      width: 36px;
-      height: 36px;
-      right: 12px;
-      bottom: 12px;
-    }
-    .cat__info {
-      padding-right: 40px;
-    }
-  }
-
-  /* ---------- ÉTAPES ---------- */
-  .steps__list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    counter-reset: step;
-  }
-  .step {
-    position: relative;
-    display: grid;
-    gap: 14px;
-    align-content: start;
-    padding: 36px 30px;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--line-dark);
-    background: linear-gradient(180deg, rgba(255, 246, 234, 0.04), transparent);
-    overflow: hidden;
-  }
-  .step__num {
-    position: absolute;
-    right: 18px;
-    top: 6px;
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 6.5rem;
-    line-height: 1;
-    letter-spacing: -0.06em;
-    color: transparent;
-    -webkit-text-stroke: 1.5px rgba(255, 180, 46, 0.35);
-  }
-  .step__icon {
-    display: grid;
-    place-items: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--cream);
-    color: var(--ink);
-    margin-bottom: 18px;
-  }
-  @media (max-width: 900px) {
-    .steps__list {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ---------- ZONE ---------- */
-  .zone__grid {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: clamp(40px, 6vw, 90px);
-    align-items: center;
-  }
-  .zone__text {
-    display: grid;
-    gap: 24px;
-    justify-items: start;
-  }
-  .zone__towns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .zone__towns :global(svg) {
-    color: var(--tomato);
-  }
-  .radar {
-    position: relative;
-    width: min(100%, 520px);
-    aspect-ratio: 1;
-    margin-inline: auto;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff 0%, var(--cream-2) 100%);
-    box-shadow:
-      inset 0 0 0 1px var(--line-light),
-      0 40px 80px -40px rgba(60, 20, 0, 0.35);
-    overflow: hidden;
-  }
-  .radar__ring {
-    position: absolute;
-    inset: calc((1 - var(--s)) * 50%);
-    border-radius: 50%;
-    border: 1.5px dashed rgba(229, 55, 12, 0.35);
-  }
-  .radar__sweep {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, rgba(255, 77, 31, 0.28), transparent 25%);
-    animation: spin 5s linear infinite;
-  }
-  .radar__dot {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    margin: -6px;
-    border-radius: 50%;
-    background: var(--tomato);
-    box-shadow: 0 0 0 6px rgba(255, 77, 31, 0.15);
-    animation: blip 2.6s var(--ease-out) infinite;
-  }
-  .radar__dot:nth-child(3n) {
-    animation-delay: 0.8s;
-  }
-  .radar__dot:nth-child(3n + 1) {
-    animation-delay: 1.6s;
-  }
-  @keyframes blip {
-    50% {
-      transform: scale(1.35);
-      box-shadow: 0 0 0 10px rgba(255, 77, 31, 0.08);
-    }
-  }
-  .radar__center {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 84px;
-    height: 84px;
-    margin: -42px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--ink);
-    box-shadow: 0 0 0 12px rgba(18, 12, 10, 0.08);
-    animation: pulse 2.4s var(--ease-out) infinite;
-  }
-  .radar__center svg {
-    width: 52px;
-  }
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(255, 77, 31, 0.45);
-    }
-    100% {
-      box-shadow: 0 0 0 40px rgba(255, 77, 31, 0);
-    }
-  }
-  .radar__label {
-    position: absolute;
-    right: 12%;
-    top: 12%;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: var(--ink);
-    color: var(--cream);
-    font-family: var(--font-display);
-    font-weight: 800;
-  }
-  @media (max-width: 900px) {
-    .zone__grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ---------- HORAIRES ---------- */
-  .hours-sec__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(40px, 6vw, 90px);
-    align-items: center;
-  }
-  .hours-sec__grid > div:first-child {
-    display: grid;
-    gap: 24px;
-    justify-items: start;
-  }
-  .hours-sec__addr {
-    display: flex;
-    gap: 12px;
-    font-style: normal;
-    font-size: 1.15rem;
-    color: var(--muted-on-dark);
-  }
-  .hours-sec__addr :global(svg) {
-    color: var(--tomato);
-    flex: none;
-    margin-top: 3px;
-  }
-  @media (max-width: 900px) {
-    .hours-sec__grid {
-      grid-template-columns: 1fr;
-    }
+  .addr b {
+    display: block;
+    color: var(--text);
+    font-size: 15.5px;
   }
 
   /* ---------- FAQ ---------- */
@@ -1286,85 +1237,352 @@ const marquee = ['Pâte fraîche du jour', 'Mozzarella fondante', `Livraison gra
     gap: clamp(32px, 6vw, 90px);
     align-items: start;
   }
-  .faq-grid .section-head {
+  .faq-grid > div:first-child {
     position: sticky;
-    top: calc(var(--header-h) + 24px);
+    top: calc(var(--hdr) + 24px);
   }
-  .faq-grid a {
-    color: var(--tomato-2);
+  .faq-grid a strong {
+    color: var(--gold);
   }
-  @media (max-width: 900px) {
+
+  /* ---------- APPEL FINAL ---------- */
+  .final {
+    position: relative;
+    overflow: clip;
+    text-align: center;
+    padding: clamp(40px, 5vw, 80px) 0 0;
+    min-height: clamp(820px, 72vw, 1040px);
+    isolation: isolate;
+  }
+  .final__eb::after {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--ember-2), transparent);
+  }
+  .final .h2 {
+    font-size: clamp(40px, 5vw, 76px);
+  }
+  .bigtel {
+    display: inline-block;
+    margin-top: 34px;
+    font: 700 clamp(46px, 8.6vw, 138px) / 1 var(--display);
+    letter-spacing: -0.055em;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(180deg, #fff5ea 0%, #ffd7ae 55%, #ff8a3d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 10px 40px rgba(255, 90, 31, 0.25));
+    transition: filter 0.4s;
+  }
+  .bigtel:hover {
+    filter: drop-shadow(0 10px 60px rgba(255, 90, 31, 0.55));
+  }
+  .final__sub {
+    margin: 18px auto 0;
+    color: var(--muted);
+    max-width: 520px;
+  }
+  .final__ctas {
+    justify-content: center;
+  }
+  .sun {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: min(64vw, 900px);
+    aspect-ratio: 1;
+    transform: translate(-50%, 54%);
+    z-index: -1;
+    perspective: 1400px;
+    pointer-events: none;
+  }
+  .sun__glow {
+    position: absolute;
+    inset: -42%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 150, 70, 0.6), rgba(255, 86, 24, 0.26) 40%, rgba(255, 60, 10, 0.07) 62%, transparent 78%);
+  }
+  .sun__tilt {
+    position: absolute;
+    inset: 0;
+    transform: rotateX(34deg);
+    transform-style: preserve-3d;
+  }
+  .sun__disc {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .sun__disc img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    clip-path: circle(49.2%);
+  }
+  .sun__shade {
+    position: absolute;
+    inset: 0.8%;
+    border-radius: 50%;
+    transform: translateZ(1px);
+    background:
+      radial-gradient(circle at 50% 4%, rgba(255, 226, 190, 0.22), transparent 38%),
+      linear-gradient(180deg, rgba(10, 8, 7, 0) 18%, rgba(10, 8, 7, 0.5) 48%, rgba(10, 8, 7, 0.85) 70%);
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 1180px) {
+    .cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .menu-grid,
+    .deliv {
+      grid-template-columns: 1fr;
+    }
+    .combos {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 980px) {
+    .offer__panel {
+      grid-template-columns: 1fr;
+    }
+    .offer__visual {
+      min-height: 440px;
+      order: -1;
+    }
+    .scroll-cue {
+      display: none;
+    }
     .faq-grid {
       grid-template-columns: 1fr;
     }
-    .faq-grid .section-head {
+    .faq-grid > div:first-child {
       position: static;
+    }
+  }
+  @media (max-width: 760px) {
+    .hide-m {
+      display: none;
+    }
+    .pz {
+      --size: min(104vw, 450px);
+      left: 54%;
+      top: 77%;
+    }
+    .pz__tag {
+      display: none;
+    }
+    .hero__content {
+      flex: none;
+      padding: 30px 0 0;
+    }
+    .kicker {
+      font-size: 11.5px;
+      padding: 7px 13px 7px 9px;
+    }
+    .hero__title {
+      font-size: clamp(44px, 13.4vw, 58px);
+      margin-top: 22px;
+    }
+    .trust {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 18px;
+      padding-bottom: 0;
+    }
+    .trust .chip {
+      gap: 8px;
+      padding: 8px;
+      border-radius: 14px;
+      background: rgba(20, 14, 11, 0.62);
+    }
+    .trust .chip .ic {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+    }
+    .trust .chip b {
+      font-size: 11.5px;
+      line-height: 1.2;
+    }
+    .trust .chip span {
+      display: none;
+    }
+    .story {
+      align-items: flex-end;
+      padding: var(--hdr) 0 34px;
+    }
+    .story__lead,
+    .legend p {
+      display: none;
+    }
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 14px;
+      margin-top: 22px;
+    }
+    .legend li {
+      grid-template-columns: 1fr;
+      padding: 12px 0;
+    }
+    .legend .n {
+      grid-row: auto;
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+    .legend b {
+      font-size: 15px;
+    }
+    .hot {
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+    }
+    .hot::before {
+      inset: 14px;
+    }
+    .hot b {
+      width: 34px;
+      height: 22px;
+      margin: -11px 0 0 -17px;
+      font-size: 14px;
+      transform: rotateZ(calc(var(--rz, 0deg) * -1)) translateY(-34px);
+    }
+    .mq__g span {
+      font-size: 22px;
+    }
+    .mq__g em {
+      font-size: 26px;
+    }
+    .mq__g {
+      gap: 30px;
+      padding-right: 30px;
+    }
+    .marquee {
+      padding: 18px 0;
+    }
+    .offer__panel {
+      border-radius: 28px;
+    }
+    .offer__num {
+      display: none;
+    }
+    .offer__visual {
+      min-height: 380px;
+    }
+    .stack {
+      width: min(64vw, 300px);
+    }
+    .dtag {
+      left: 60%;
+      font-size: 11.5px;
+      padding: 6px 11px 6px 6px;
+    }
+    .dtag--l {
+      left: auto;
+      right: 60%;
+    }
+    .dtag i {
+      width: 22px;
+      height: 22px;
+      font-size: 14px;
+    }
+    .offer__copy {
+      padding: 8px 22px 30px;
+    }
+    .cards {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 14px;
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 4px var(--gutter) 10px;
+      scrollbar-width: none;
+    }
+    .cards::-webkit-scrollbar {
+      display: none;
+    }
+    .cards > li {
+      flex: 0 0 82%;
+      scroll-snap-align: center;
+    }
+    .cine {
+      height: auto;
+      min-height: 0;
+      padding-bottom: 40px;
+    }
+    .cine__media {
+      inset: 0;
+    }
+    .cine::before {
+      background: linear-gradient(180deg, var(--bg) 0%, rgba(10, 8, 7, 0.55) 30%, rgba(10, 8, 7, 0.35) 55%, rgba(10, 8, 7, 0.9) 85%, var(--bg) 100%);
+    }
+    .cine__copy {
+      padding-top: 80px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 160px;
+    }
+    .stat {
+      min-width: 0;
+      padding: 14px 12px;
+    }
+    .stat b {
+      font-size: 22px;
+    }
+    .stat span {
+      font-size: 10.5px;
+      line-height: 1.35;
+    }
+    .combos {
+      grid-template-columns: 1fr;
+    }
+    .lists {
+      grid-template-columns: 1fr;
+      padding: 22px;
+    }
+    .radius {
+      grid-template-columns: 1fr;
+    }
+    .radar {
+      max-width: 260px;
+      margin: 0 auto;
+    }
+    .hours li {
+      align-items: flex-start;
+    }
+    .sl {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+    .sl i + i::before {
+      display: none;
+    }
+    .hours li:global(.today) > span:first-child::after {
+      display: block;
+      margin: 6px 0 0;
+    }
+    .final {
+      min-height: 720px;
+    }
+    .sun {
+      width: 118vw;
+      transform: translate(-50%, 56%);
     }
   }
 </style>
 
 <script>
-  import { gsap, ScrollTrigger } from '../scripts/motion';
-
-  const hero = document.querySelector<HTMLElement>('[data-hero]');
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function webglAvailable() {
-    try {
-      const c = document.createElement('canvas');
-      return !!(c.getContext('webgl2') || c.getContext('webgl'));
-    } catch {
-      return false;
-    }
-  }
-
-  let scene: import('../scripts/pizza3d').PizzaScene | null = null;
-  let progress = 0;
-
-  // L'épinglage est créé tout de suite (pas de saut de mise en page), la 3D se branche ensuite.
-  if (hero && !reduce) {
-    const content = hero.querySelector('[data-hero-content]');
-    const word = hero.querySelector('[data-hero-word]');
-    const fallback = hero.querySelector('[data-hero-fallback]');
-    gsap
-      .timeline({
-        scrollTrigger: {
-          trigger: hero,
-          start: 'top top',
-          end: '+=110%',
-          scrub: true,
-          pin: true,
-          anticipatePin: 1,
-          onUpdate: (self) => {
-            progress = self.progress;
-            scene?.setProgress(progress);
-          },
-        },
-      })
-      .to(content, { y: -120, opacity: 0, ease: 'none' }, 0.15)
-      .to(word, { scale: 1.25, opacity: 0.3, ease: 'none' }, 0)
-      .to(fallback, { scale: 1.2, rotate: 90, ease: 'none' }, 0);
-    ScrollTrigger.refresh();
-  }
-
-  async function boot() {
-    if (!hero || !canvas || !webglAvailable()) return;
-    const { createPizzaScene } = await import('../scripts/pizza3d');
-    scene = createPizzaScene(canvas);
-    if (!scene) return;
-    scene.setProgress(progress);
-    document.documentElement.classList.add('has-webgl');
-    if (!reduce) {
-      window.addEventListener(
-        'pointermove',
-        (e) => scene?.setPointer((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1),
-        { passive: true },
-      );
-    }
-  }
-
-  // on laisse le texte (LCP) s'afficher avant de charger la 3D
-  if ('requestIdleCallback' in window) (window as any).requestIdleCallback(boot, { timeout: 1200 });
-  else setTimeout(boot, 300);
+  import { initHome } from '../scripts/home';
+  initHome();
 </script>

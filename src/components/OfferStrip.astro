@@ -1,0 +1,94 @@
+---
+import { getImage } from 'astro:assets';
+import Icon from './Icon.astro';
+import { SITE } from '../data/site';
+import { cutout } from '../lib/photos';
+const img = (await getImage({ src: cutout('supreme')!, width: 500, format: 'webp', quality: 80 })).src;
+---
+
+<aside class="ostrip" aria-label="Offre en cours">
+  <img class="ostrip__pz" src={img} alt="" width="500" height="500" loading="lazy" />
+  <span class="ostrip__ic"><Icon name="gift" stroke={2} /></span>
+  <div class="ostrip__txt">
+    <p class="ostrip__t">2 pizzas achetées, <em class="grad">la 3<sup>e</sup> offerte.</em></p>
+    <p class="ostrip__s">{SITE.offer.conditions}</p>
+  </div>
+  <a class="btn btn-ember btn-sm" href="/carte/pizzas/">Choisir mes pizzas</a>
+</aside>
+
+<style>
+  .ostrip {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px 24px;
+    margin-top: clamp(40px, 5vw, 64px);
+    padding: 28px clamp(24px, 4vw, 44px);
+    padding-right: clamp(24px, 24vw, 330px);
+    border-radius: 28px;
+    overflow: clip;
+    isolation: isolate;
+    border: 1px solid rgba(255, 190, 150, 0.14);
+    background:
+      radial-gradient(60% 140% at 92% 50%, rgba(255, 86, 24, 0.3), transparent 70%),
+      linear-gradient(150deg, #1b1411, #0f0b09);
+  }
+  .ostrip__pz {
+    position: absolute;
+    z-index: -1;
+    right: -40px;
+    top: 50%;
+    width: 300px;
+    height: 300px;
+    margin-top: -150px;
+    transform: perspective(900px) rotateX(48deg) rotateZ(-20deg);
+    clip-path: circle(49%);
+    filter: drop-shadow(0 30px 30px rgba(0, 0, 0, 0.7));
+    animation: ospin 40s linear infinite;
+  }
+  @keyframes ospin {
+    to {
+      transform: perspective(900px) rotateX(48deg) rotateZ(340deg);
+    }
+  }
+  .ostrip__ic {
+    flex: none;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: var(--grad-btn);
+    color: #170903;
+  }
+  .ostrip__txt {
+    flex: 1 1 280px;
+  }
+  .ostrip__t {
+    font: 700 clamp(22px, 2.6vw, 32px) / 1.05 var(--display);
+    letter-spacing: -0.035em;
+  }
+  .ostrip__t em {
+    font: italic 400 1.1em/1 var(--serif);
+  }
+  .ostrip__s {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  @media (max-width: 700px) {
+    .ostrip {
+      padding-right: 24px;
+      padding-bottom: 170px;
+    }
+    .ostrip__pz {
+      top: auto;
+      bottom: -120px;
+      margin: 0;
+      right: -30px;
+      width: 260px;
+      height: 260px;
+    }
+  }
+</style>

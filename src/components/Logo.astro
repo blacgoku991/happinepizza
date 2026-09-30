@@ -1,38 +1,33 @@
 ---
-/**
- * Logo Happiness Pizza — "la part qui sourit".
- * Le symbole est en SVG, le nom en texte HTML (net, accessible et indexable).
- */
+/** Logo Happiness Pizza : arche de four à bois + flamme, wordmark Syne / Instrument Serif. */
 interface Props {
-  size?: 'sm' | 'md' | 'lg';
-  mono?: boolean;
   class?: string;
+  sub?: boolean;
 }
-const { size = 'md', mono = false, class: className = '' } = Astro.props;
+const { class: className, sub = true } = Astro.props;
+const id = `lg${Math.random().toString(36).slice(2, 7)}`;
 ---
 
-<span class:list={['logo', `logo--${size}`, { 'logo--mono': mono }, className]}>
-  <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-    <!-- part de pizza -->
-    <path
-      class="logo__slice"
-      d="M9.5 19.5c14.8-5.6 30.2-5.6 45 0L35.2 56.6c-1.4 2.6-5 2.6-6.4 0L9.5 19.5Z"
-    ></path>
-    <!-- coulure de fromage -->
-    <path class="logo__drip" d="M40.6 44.6c1.6 3.4 1.2 6.7-.6 7.4-1.8.7-3-1.4-2.4-4.3" fill="none"></path>
-    <!-- croûte -->
-    <path class="logo__crust" d="M6.5 17.8c16.4-7.1 34.6-7.1 51 0" fill="none"></path>
-    <!-- yeux pepperoni -->
-    <circle class="logo__eye" cx="24.2" cy="27.6" r="3.9"></circle>
-    <circle class="logo__eye" cx="39.8" cy="27.6" r="3.9"></circle>
-    <circle class="logo__shine" cx="23" cy="26.4" r="1.1"></circle>
-    <circle class="logo__shine" cx="38.6" cy="26.4" r="1.1"></circle>
-    <!-- sourire -->
-    <path class="logo__smile" d="M24.5 36.2c4.6 4.6 10.4 4.6 15 0" fill="none"></path>
+<span class:list={['logo', className]}>
+  <svg class="logo__mark" viewBox="0 0 40 40" aria-hidden="true">
+    <defs>
+      <radialGradient id={`${id}e`} cx="50%" cy="88%" r="70%">
+        <stop offset="0" stop-color="#FFE2B0"></stop><stop offset=".3" stop-color="#FF9A45"></stop>
+        <stop offset=".62" stop-color="#FF4F14" stop-opacity=".75"></stop><stop offset="1" stop-color="#FF4F14" stop-opacity="0"></stop>
+      </radialGradient>
+      <linearGradient id={`${id}f`} x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#FF5A1F"></stop><stop offset=".55" stop-color="#FFA24F"></stop><stop offset="1" stop-color="#FFE7BF"></stop>
+      </linearGradient>
+    </defs>
+    <circle cx="20" cy="20" r="19.2" fill="none" stroke="rgba(246,239,231,.16)" stroke-width="1"></circle>
+    <ellipse cx="20" cy="27.6" rx="8.4" ry="5.4" fill={`url(#${id}e)`}></ellipse>
+    <path d="M20 19.6c2.3 2 3.3 3.8 3.3 5.3a3.3 3.3 0 0 1-6.6 0c0-.9.4-1.8 1.1-2.7.2.9.7 1.4 1.3 1.6-.3-1.4.1-2.8.9-4.2z" fill={`url(#${id}f)`}></path>
+    <path d="M10.2 29.5V20.3a9.8 9.8 0 0 1 19.6 0v9.2" fill="none" stroke="#F6EFE7" stroke-width="1.7" stroke-linecap="round"></path>
+    <path d="M6.8 29.5h26.4" stroke="#F6EFE7" stroke-width="1.7" stroke-linecap="round"></path>
   </svg>
-  <span class="logo__text">
-    <span class="logo__name">happiness</span>
-    <span class="logo__sub">pizza</span>
+  <span class="logo__txt">
+    <span class="logo__word">Happiness<em>Pizza</em></span>
+    {sub && <span class="logo__sub">Pizzeria artisanale</span>}
   </span>
 </span>
 
@@ -40,90 +35,52 @@ const { size = 'md', mono = false, class: className = '' } = Astro.props;
   .logo {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    line-height: 1;
-    color: var(--cream);
+    gap: 12px;
   }
   .logo__mark {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     flex: none;
-    overflow: visible;
-    transition: transform 0.6s var(--ease-spring);
   }
-  a:hover .logo__mark,
-  .logo:hover .logo__mark {
-    transform: rotate(-10deg) scale(1.06);
+  .logo__txt {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
   }
-  .logo__slice {
-    fill: var(--saffron);
+  .logo__word {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.035em;
+    white-space: nowrap;
   }
-  .logo__drip {
-    stroke: var(--saffron);
-    stroke-width: 3.4;
-    stroke-linecap: round;
-  }
-  .logo__crust {
-    stroke: var(--tomato);
-    stroke-width: 7.5;
-    stroke-linecap: round;
-  }
-  .logo__eye {
-    fill: var(--tomato);
-  }
-  .logo__shine {
-    fill: #fff3dc;
-    opacity: 0.85;
-  }
-  .logo__smile {
-    stroke: var(--ink);
-    stroke-width: 3.4;
-    stroke-linecap: round;
-  }
-  .logo__text {
-    display: grid;
-    gap: 2px;
-  }
-  .logo__name {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.55rem;
-    letter-spacing: -0.055em;
-    font-variation-settings: 'wdth' 88;
+  .logo__word em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.22em;
+    letter-spacing: -0.01em;
+    margin-left: 3px;
+    color: var(--ember-2);
   }
   .logo__sub {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.66rem;
-    letter-spacing: 0.52em;
+    font: 600 8.5px/1 var(--sans);
+    letter-spacing: 0.34em;
     text-transform: uppercase;
-    color: var(--tomato);
-    padding-left: 2px;
+    color: var(--dim);
+    margin-top: 5px;
   }
-  .logo--sm .logo__mark {
-    width: 36px;
-    height: 36px;
-  }
-  .logo--sm .logo__name {
-    font-size: 1.3rem;
-  }
-  .logo--sm .logo__sub {
-    font-size: 0.58rem;
-  }
-  .logo--lg .logo__mark {
-    width: 72px;
-    height: 72px;
-  }
-  .logo--lg .logo__name {
-    font-size: 2.6rem;
-  }
-  .logo--lg .logo__sub {
-    font-size: 0.95rem;
-  }
-  .logo--mono {
-    color: var(--ink);
-  }
-  .logo--mono .logo__smile {
-    stroke: var(--ink);
+  @media (max-width: 760px) {
+    .logo__mark {
+      width: 34px;
+      height: 34px;
+    }
+    .logo__word {
+      font-size: 17px;
+    }
+    .logo__sub {
+      font-size: 7.5px;
+      letter-spacing: 0.3em;
+    }
   }
 </style>

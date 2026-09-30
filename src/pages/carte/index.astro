@@ -5,9 +5,9 @@ import CategoryNav from '../../components/CategoryNav.astro';
 import PizzaCard from '../../components/PizzaCard.astro';
 import ItemCard from '../../components/ItemCard.astro';
 import PizzaFilters from '../../components/PizzaFilters.astro';
-import OfferBanner from '../../components/OfferBanner.astro';
+import OfferStrip from '../../components/OfferStrip.astro';
 import { PIZZAS, CATEGORIES, PIZZA_CATEGORY } from '../../data/menu';
-import { SITE } from '../../data/site';
+import { SITE, telHref } from '../../data/site';
 import { menuSchema, breadcrumbSchema } from '../../lib/schema';
 
 const crumbs = [
@@ -26,85 +26,120 @@ const crumbs = [
     crumbs={crumbs}
     eyebrow="La carte"
     title="Notre carte,"
-    titleAccent=" faite pour partager."
-    intro={`${PIZZAS.length} pizzas artisanales en trois tailles, des menus malins, des pâtes gratinées, des salades fraîches et des desserts gourmands. Composez votre panier, puis appelez-nous au ${SITE.phone}.`}
-    compact
+    titleAccent="faite pour partager."
+    intro={`${PIZZAS.length} pizzas artisanales en trois tailles, des menus malins, des pâtes gratinées et des desserts gourmands. Composez votre panier, puis appelez-nous au ${SITE.phone}.`}
+    photo="ambiance-ardoise"
   />
 
-  <div class="on-light carte">
-    <CategoryNav mode="anchor" />
+  <CategoryNav mode="anchor" />
 
-    <section id={PIZZA_CATEGORY.slug} class="carte__section" data-filter-scope aria-labelledby="t-pizzas">
-      <div class="container">
-        <header class="carte__head">
-          <div>
-            <span class="eyebrow">{PIZZA_CATEGORY.emoji} Junior · Senior · Méga</span>
-            <h2 id="t-pizzas" class="h-2">Pizzas</h2>
-          </div>
-          <p class="muted">{PIZZA_CATEGORY.intro}</p>
-        </header>
-        <PizzaFilters />
-        <ul class="grid-pizzas">
-          {PIZZAS.map((p) => <li><PizzaCard pizza={p} /></li>)}
-        </ul>
-      </div>
-    </section>
+  <section id={PIZZA_CATEGORY.slug} class="csec" data-filter-scope aria-labelledby="t-pizzas">
+    <div class="wrap">
+      <header class="chead">
+        <div>
+          <span class="eyebrow">Junior · Senior · Méga</span>
+          <h2 id="t-pizzas" class="h2">Les <em class="grad">pizzas</em></h2>
+        </div>
+        <p>{PIZZA_CATEGORY.intro}</p>
+      </header>
+      <PizzaFilters />
+      <ul class="grid-pizzas">
+        {PIZZAS.map((p) => <li><PizzaCard pizza={p} /></li>)}
+      </ul>
+      <OfferStrip />
+    </div>
+  </section>
 
-    <div class="container"><OfferBanner /></div>
-
-    {
-      CATEGORIES.map((c) => (
-        <section id={c.slug} class="carte__section" aria-labelledby={`t-${c.slug}`}>
-          <div class="container">
-            <header class="carte__head">
-              <div>
-                <span class="eyebrow">
-                  {c.emoji} {c.items.length} choix
-                </span>
-                <h2 id={`t-${c.slug}`} class="h-2">
-                  <a href={`/carte/${c.slug}/`}>{c.name}</a>
-                </h2>
-              </div>
-              <p class="muted">{c.intro}</p>
-            </header>
-            <ul class="grid-items">
+  {
+    CATEGORIES.map((c) => (
+      <section id={c.slug} class="csec" aria-labelledby={`t-${c.slug}`}>
+        <div class="wrap">
+          <header class="chead">
+            <div>
+              <span class="eyebrow">{c.items.length} choix</span>
+              <h2 id={`t-${c.slug}`} class="h2">
+                <a href={`/carte/${c.slug}/`}>{c.name}</a>
+              </h2>
+            </div>
+            <p>{c.intro}</p>
+          </header>
+          {c.slug === 'menus' ? (
+            <ul class="combo-grid">
               {c.items.map((it) => (
                 <li>
-                  <ItemCard item={it} category={c.slug} />
+                  <ItemCard item={it} category={c.slug} variant="combo" />
                 </li>
               ))}
             </ul>
-          </div>
-        </section>
-      ))
-    }
-  </div>
+          ) : (
+            <div class="rows">
+              {c.items.map((it) => (
+                <ItemCard item={it} category={c.slug} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="sec--tight">
+    <div class="wrap cta-line">
+      <p class="h3">Prêt à commander&nbsp;? <em class="grad">On décroche.</em></p>
+      <a class="btn btn-ember" href={telHref}>Appeler le {SITE.phone}</a>
+    </div>
+  </section>
 </Base>
 
 <style>
-  .carte {
-    padding-bottom: clamp(60px, 8vw, 120px);
+  .csec {
+    padding-top: clamp(64px, 8vw, 110px);
+    scroll-margin-top: calc(var(--hdr) + 70px);
   }
-  .carte__section {
-    padding-top: clamp(56px, 7vw, 96px);
-    scroll-margin-top: calc(var(--header-h) + 70px);
-  }
-  .carte__head {
+  .chead {
     display: flex;
     flex-wrap: wrap;
-    align-items: end;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 16px 40px;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
-  .carte__head > div {
+  .chead p {
+    max-width: 420px;
+    color: var(--muted);
+  }
+  .chead .h2 {
+    margin-top: 16px;
+  }
+  .chead a:hover {
+    color: var(--gold);
+  }
+  .rows {
     display: grid;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+    column-gap: clamp(24px, 4vw, 64px);
+    padding: 8px clamp(20px, 3vw, 40px);
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255, 240, 228, 0.03), rgba(255, 240, 228, 0.01));
   }
-  .carte__head p {
-    max-width: 46ch;
+  .combo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+    gap: 20px;
   }
-  .carte__head h2 a:hover {
-    color: var(--tomato-2);
+  .cta-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 32px clamp(24px, 4vw, 48px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 140, 70, 0.25);
+    background: radial-gradient(60% 120% at 90% 50%, rgba(255, 90, 31, 0.18), transparent 70%), var(--s1);
+  }
+  .cta-line .h3 {
+    font-size: clamp(24px, 3vw, 36px);
   }
 </style>

@@ -1,23 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
+import Photo from '../components/Photo.astro';
 import Icon from '../components/Icon.astro';
 import { SITE, telHref } from '../data/site';
-import { PIZZAS, pizzaBySlug } from '../data/menu';
 import { breadcrumbSchema } from '../lib/schema';
-import { pizzaArt } from '../lib/pizzaArt';
+import { photo } from '../lib/photos';
 
 const crumbs = [
   { name: 'Accueil', path: '/' },
   { name: 'Notre histoire', path: '/a-propos/' },
 ];
-const art = pizzaArt(pizzaBySlug('chevre-miel') ?? PIZZAS[0]);
 
 const values = [
-  { icon: 'wheat', title: 'La pâte, notre fierté', text: 'Pétrie chaque jour sur place, elle repose le temps qu’il faut pour être légère, moelleuse et croustillante.' },
+  { icon: 'flame', title: 'La pâte, notre fierté', text: 'Pétrie chaque jour sur place, elle repose le temps qu’il faut pour être légère, moelleuse et croustillante.' },
   { icon: 'leaf', title: 'Des produits choisis', text: 'Mozzarella fondante, légumes frais, viandes et fromages sélectionnés : on ne transige pas sur la qualité.' },
-  { icon: 'flame', title: 'Des recettes pour tous', text: 'Des grands classiques italiens aux créations gourmandes comme la Burger ou la Chilly, il y en a pour chaque envie.' },
-  { icon: 'heart', title: 'L’accueil avant tout', text: 'Sur place, à emporter ou en livraison, notre équipe vous reçoit avec le sourire. Happiness, ce n’est pas qu’un nom.' },
+  { icon: 'star', title: 'Des recettes pour tous', text: 'Des grands classiques aux créations gourmandes comme la Burger ou la Chilly, il y en a pour chaque envie.' },
+  { icon: 'store', title: 'L’accueil avant tout', text: 'Sur place, à emporter ou en livraison, notre équipe vous reçoit avec le sourire. Happiness, ce n’est pas qu’un nom.' },
 ] as const;
 ---
 
@@ -31,146 +30,166 @@ const values = [
     crumbs={crumbs}
     eyebrow="Notre histoire"
     title="Une pizzeria de quartier,"
-    titleAccent=" une passion XXL."
+    titleAccent="une passion XXL."
     intro={`Chez ${SITE.name}, nous mettons tout notre savoir-faire et notre passion dans la création de pizzas délicieuses, préparées avec des ingrédients soigneusement sélectionnés.`}
-  >
-    <div slot="art" class="about-art" data-speed="-0.3" set:html={art} />
-  </PageHero>
+    photo="ambiance-four"
+  />
 
-  <section class="section on-light">
-    <div class="container about-story">
-      <div class="about-story__big" data-reveal>
-        <p>
-          « Que vous soyez amateur de <span class="serif">recettes classiques</span> ou en quête de <span class="serif text-tomato"
-            >saveurs originales</span
-          >, notre carte saura vous séduire. »
-        </p>
+  <section class="sec--tight">
+    <div class="wrap story">
+      <div class="story__media rv">
+        <Photo src={photo('ambiance-margherita')} alt="Pizza margherita au basilic frais" sizes="(min-width: 900px) 45vw, 100vw" class="story__img" />
       </div>
-      <div class="about-story__text">
-        <p data-reveal>
-          Installée au cœur de {SITE.address.city}, au {SITE.address.street}, {SITE.name} est née d'une idée simple : proposer des pizzas
-          artisanales au goût authentique, préparées chaque jour avec des ingrédients frais et de qualité, à des prix accessibles à tous.
+      <div class="story__txt">
+        <p class="quote rv">
+          « Que vous soyez amateur de <em>recettes classiques</em> ou en quête de <em class="grad">saveurs originales</em>, notre carte saura vous séduire. »
         </p>
-        <p data-reveal>
-          Chaque pizza est façonnée à la commande : la pâte est étalée à la main, garnie généreusement puis cuite jusqu'à ce que la croûte soit
-          dorée et le fromage parfaitement fondu. Chez nous, chaque bouchée est une explosion de saveurs !
+        <p class="rv">
+          Installée au cœur de {SITE.address.city}, au {SITE.address.street}, {SITE.name} est née d'une idée simple : proposer des pizzas artisanales au
+          goût authentique, préparées chaque jour avec des ingrédients frais et de qualité, à des prix accessibles à tous.
         </p>
-        <p data-reveal>
-          Au-delà des pizzas, découvrez nos pâtes gratinées, salades fraîches, paninis croustillants et desserts gourmands — à déguster sur
-          place, à emporter ou livrés chez vous à {SITE.address.city} et alentours.
+        <p class="rv">
+          Chaque pizza est façonnée à la commande : la pâte est étalée à la main, garnie généreusement puis cuite jusqu'à ce que la croûte soit dorée et le
+          fromage parfaitement fondu. Chez nous, chaque bouchée est une explosion de saveurs.
         </p>
-        <div class="about-story__ctas" data-reveal>
-          <a href="/carte/" class="btn">Découvrir la carte <Icon name="arrow" /></a>
-          <a href={telHref} class="btn btn--ghost"><Icon name="phone" /> {SITE.phone}</a>
+        <div class="ctas rv">
+          <a href="/carte/" class="btn btn-ember">Découvrir la carte <Icon name="arrow" stroke={2} /></a>
+          <a href={telHref} class="btn btn-glass"><span class="dot"><Icon name="phone" /></span>{SITE.phone}</a>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="section-head">
-        <span class="eyebrow">Nos engagements</span>
-        <h2 class="h-1" data-split>Ce qui nous rend <span class="serif text-saffron">heureux.</span></h2>
+  <section class="sec--tight">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">Nos engagements</span>
+          <h2 class="h2">Ce qui nous rend<em class="grad block">heureux.</em></h2>
+        </div>
       </div>
-      <ul class="about-values">
+      <ul class="values">
         {
           values.map((v, i) => (
-            <li class="tilt" data-reveal data-delay={i * 0.08}>
-              <span class="tilt__glare" />
-              <span class="about-values__num">{String(i + 1).padStart(2, '0')}</span>
-              <span class="about-values__icon tilt__pop">
-                <Icon name={v.icon} size={28} />
+            <li class="rv" style={`--d:${i}`}>
+              <span class="values__n">{String(i + 1).padStart(2, '0')}</span>
+              <span class="values__ic">
+                <Icon name={v.icon} />
               </span>
-              <h3 class="h-3">{v.title}</h3>
-              <p class="muted">{v.text}</p>
+              <h3 class="h3">{v.title}</h3>
+              <p>{v.text}</p>
             </li>
           ))
         }
       </ul>
     </div>
   </section>
+
+  <section class="band" aria-hidden="true">
+    <Photo src={photo('ambiance-fromage')} alt="" sizes="100vw" class="band__img" />
+  </section>
 </Base>
 
 <style>
-  .about-art {
-    width: min(100%, 460px);
-    filter: drop-shadow(0 40px 40px rgba(0, 0, 0, 0.5));
-    animation: aboutspin 70s linear infinite;
-  }
-  @keyframes aboutspin {
-    to {
-      rotate: 360deg;
-    }
-  }
-  .about-story {
+  .story {
     display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: clamp(40px, 6vw, 100px);
-    align-items: start;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 6vw, 90px);
+    align-items: center;
   }
-  .about-story__big p {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2rem, 4vw, 3.4rem);
-    line-height: 1.02;
-    letter-spacing: -0.04em;
+  .story__media {
+    border-radius: 32px;
+    overflow: hidden;
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--line);
   }
-  .about-story__text {
+  .story__media :global(picture),
+  .story__media :global(.story__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .story__txt {
     display: grid;
     gap: 20px;
-    font-size: 1.08rem;
-    color: var(--muted-on-light);
+    color: var(--muted);
+    font-size: 16.5px;
   }
-  .about-story__ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
+  .quote {
+    font: 700 clamp(26px, 3vw, 40px) / 1.1 var(--display);
+    letter-spacing: -0.035em;
+    color: var(--text);
   }
-  .about-values {
+  .quote em {
+    font: italic 400 1.1em/1 var(--serif);
+  }
+  .values {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
-  .about-values li {
+  .values li {
     position: relative;
     display: grid;
-    gap: 14px;
+    gap: 12px;
     align-content: start;
-    padding: 32px 26px;
-    border-radius: var(--radius-lg);
-    background: linear-gradient(170deg, var(--ink-3), var(--ink-2));
-    border: 1px solid var(--line-dark);
+    padding: 30px 26px;
+    border-radius: 26px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--muted);
+    font-size: 14.5px;
   }
-  .about-values__num {
+  .values h3 {
+    color: var(--text);
+  }
+  .values__n {
     position: absolute;
     top: 22px;
     right: 24px;
-    font-family: var(--font-display);
-    font-weight: 800;
-    color: var(--muted-on-dark);
-    opacity: 0.6;
+    font: italic 400 22px/1 var(--serif);
+    color: var(--ember-2);
   }
-  .about-values__icon {
+  .values__ic {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
     display: grid;
     place-items: center;
-    width: 58px;
-    height: 58px;
-    border-radius: 18px;
-    background: var(--tomato);
-    margin-bottom: 12px;
+    background: var(--grad-btn);
+    color: #170903;
+    margin-bottom: 8px;
+  }
+  .band {
+    position: relative;
+    height: clamp(260px, 40vw, 520px);
+    overflow: hidden;
+  }
+  .band :global(picture),
+  .band :global(.band__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .band::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--bg), transparent 30%, transparent 70%, #080605);
   }
   @media (max-width: 1000px) {
-    .about-values {
+    .values {
       grid-template-columns: repeat(2, 1fr);
     }
-    .about-story {
+    .story {
       grid-template-columns: 1fr;
+    }
+    .story__media {
+      aspect-ratio: 16 / 10;
     }
   }
   @media (max-width: 560px) {
-    .about-values {
+    .values {
       grid-template-columns: 1fr;
     }
   }

@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
-import Hours from '../components/Hours.astro';
+import HoursPanel from '../components/HoursPanel.astro';
 import Icon from '../components/Icon.astro';
 import { SITE, telHref, mapsUrl, fullAddress } from '../data/site';
 import { breadcrumbSchema } from '../lib/schema';
@@ -23,50 +23,35 @@ const osm = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=
     { '@context': 'https://schema.org', '@type': 'ContactPage', name: `Contact ${SITE.name}`, url: `${SITE.url}/contact/`, about: { '@id': `${SITE.url}/#restaurant` } },
   ]}
 >
-  <PageHero crumbs={crumbs} eyebrow="Contact" title="Passez nous voir," titleAccent=" ou appelez-nous." intro="Commandes, questions, grosses tablées : notre équipe vous répond pendant les heures d'ouverture." />
+  <PageHero crumbs={crumbs} eyebrow="Contact" title="Passez nous voir," titleAccent="ou appelez-nous." intro="Commandes, questions, grandes tablées : notre équipe vous répond pendant les heures d'ouverture." photo="ambiance-planche" />
 
-  <section class="section--tight on-light contact">
-    <div class="container contact__grid">
-      <div class="contact__cards">
-        <a href={telHref} class="ccard ccard--phone" data-reveal>
-          <span class="ccard__icon"><Icon name="phone" size={28} /></span>
-          <span class="ccard__label">Téléphone · commandes</span>
-          <strong class="ccard__value">{SITE.phone}</strong>
-          <span class="ccard__cta">Appeler <Icon name="arrow" size={18} /></span>
+  <section class="sec--tight">
+    <div class="wrap grid">
+      <div class="cards">
+        <a href={telHref} class="cc cc--phone rv">
+          <span class="cc__ic"><Icon name="phone" stroke={2} /></span>
+          <span class="cc__l">Téléphone · commandes</span>
+          <strong class="cc__v">{SITE.phone}</strong>
+          <span class="cc__cta">Appeler <Icon name="arrow" size={18} stroke={2} /></span>
         </a>
-        <a href={mapsUrl} target="_blank" rel="noopener" class="ccard" data-reveal data-delay="0.08">
-          <span class="ccard__icon"><Icon name="pin" size={28} /></span>
-          <span class="ccard__label">Adresse</span>
-          <address class="ccard__value">{SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</address>
-          <span class="ccard__cta">Itinéraire <Icon name="arrow-up-right" size={18} /></span>
+        <a href={mapsUrl} target="_blank" rel="noopener" class="cc rv" style="--d:1">
+          <span class="cc__ic"><Icon name="pin" /></span>
+          <span class="cc__l">Adresse</span>
+          <address class="cc__v">{SITE.address.street}<br />{SITE.address.postalCode} {SITE.address.city}</address>
+          <span class="cc__cta">Itinéraire <Icon name="arrow-up-right" size={18} /></span>
         </a>
-        {
-          SITE.email && (
-            <a href={`mailto:${SITE.email}`} class="ccard" data-reveal data-delay="0.16">
-              <span class="ccard__icon">
-                <Icon name="card" size={28} />
-              </span>
-              <span class="ccard__label">E-mail</span>
-              <strong class="ccard__value">{SITE.email}</strong>
-            </a>
-          )
-        }
-        <div class="ccard ccard--info" data-reveal data-delay="0.16">
-          <span class="ccard__label">Services</span>
-          <ul class="ccard__list">
-            {SITE.services.map((s) => <li><Icon name="check" size={18} /> {s}</li>)}
-          </ul>
-          <span class="ccard__label">Paiements acceptés</span>
-          <ul class="ccard__list">
-            {SITE.payments.map((p) => <li><Icon name="check" size={18} /> {p}</li>)}
-          </ul>
+        <div class="cc rv" style="--d:2">
+          <span class="cc__l">Services</span>
+          <ul class="cc__list">{SITE.services.map((s) => <li><Icon name="check" size={17} stroke={2} /> {s}</li>)}</ul>
+          <span class="cc__l">Paiements acceptés</span>
+          <ul class="cc__list">{SITE.payments.map((p) => <li><Icon name="check" size={17} stroke={2} /> {p}</li>)}</ul>
         </div>
       </div>
-      <div class="contact__side">
-        <div data-reveal><Hours /></div>
-        <div class="contact__map" data-reveal>
+      <div class="side">
+        <div class="rv"><HoursPanel /></div>
+        <div class="map rv">
           <iframe title={`Plan d'accès — ${SITE.name}`} src={osm} loading="lazy" referrerpolicy="no-referrer"></iframe>
-          <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn--sm contact__map-btn">Ouvrir dans Google Maps <Icon name="arrow-up-right" size={16} /></a>
+          <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn-ember btn-sm map__btn">Ouvrir dans Google Maps <Icon name="arrow-up-right" size={16} /></a>
         </div>
       </div>
     </div>
@@ -74,109 +59,98 @@ const osm = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=
 </Base>
 
 <style>
-  .contact {
-    padding-bottom: clamp(80px, 10vw, 140px);
-  }
-  .contact__grid {
+  .grid {
     display: grid;
     grid-template-columns: 1fr 1.1fr;
     gap: 20px;
     align-items: start;
   }
-  .contact__cards {
+  .cards,
+  .side {
     display: grid;
     gap: 16px;
   }
-  .contact__side {
-    display: grid;
-    gap: 16px;
-  }
-  .ccard {
+  .cc {
     display: grid;
     gap: 8px;
     padding: 28px;
-    border-radius: var(--radius-lg);
-    background: #fff;
-    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
-    transition: transform 0.5s var(--ease-out);
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    transition: border-color 0.3s, transform 0.5s var(--ease);
   }
-  a.ccard:hover {
-    transform: translateY(-4px);
+  a.cc:hover {
+    border-color: rgba(255, 140, 70, 0.4);
+    transform: translateY(-3px);
   }
-  .ccard--phone {
-    background: var(--tomato);
-    color: #fff;
+  .cc--phone {
+    border-color: rgba(255, 140, 70, 0.35);
+    background: radial-gradient(80% 120% at 100% 0%, rgba(255, 90, 31, 0.3), transparent 60%), var(--s1);
   }
-  .ccard__icon {
+  .cc__ic {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
     display: grid;
     place-items: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 18px;
-    background: var(--ink);
-    color: var(--cream);
+    background: var(--grad-btn);
+    color: #170903;
     margin-bottom: 8px;
   }
-  .ccard--phone .ccard__icon {
-    background: rgba(255, 255, 255, 0.2);
-  }
-  .ccard__label {
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
+  .cc__l {
+    font: 700 10.5px/1 var(--sans);
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    opacity: 0.75;
+    color: var(--dim);
   }
-  .ccard__value {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.5rem, 3vw, 2.3rem);
+  .cc__v {
+    font: 700 clamp(24px, 3vw, 36px) / 1.1 var(--display);
     letter-spacing: -0.035em;
-    line-height: 1.05;
     font-style: normal;
   }
-  .ccard__cta {
+  .cc__cta {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-weight: 700;
     margin-top: 6px;
+    font-weight: 700;
+    color: var(--ember-2);
   }
-  .ccard__list {
+  .cc__list {
     display: grid;
-    gap: 6px;
-    margin-bottom: 12px;
+    gap: 8px;
+    margin: 6px 0 14px;
   }
-  .ccard__list li {
+  .cc__list li {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-weight: 600;
   }
-  .ccard__list :global(svg) {
-    color: var(--basil);
+  .cc__list :global(.i) {
+    color: var(--ember-2);
   }
-  .contact__map {
+  .map {
     position: relative;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
     aspect-ratio: 4 / 3;
-    background: var(--cream-2);
-    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--s1);
   }
-  .contact__map iframe {
+  .map iframe {
     width: 100%;
     height: 100%;
     border: 0;
-    filter: saturate(0.9) sepia(0.15);
+    filter: invert(0.92) hue-rotate(180deg) saturate(0.6) brightness(0.9);
   }
-  .contact__map-btn {
+  .map__btn {
     position: absolute;
     left: 16px;
     bottom: 16px;
   }
   @media (max-width: 900px) {
-    .contact__grid {
+    .grid {
       grid-template-columns: 1fr;
     }
   }

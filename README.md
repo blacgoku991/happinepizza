@@ -2,11 +2,11 @@
 
 Site vitrine et carte en ligne de **Happiness Pizza**, pizzeria artisanale au 37 avenue du Général de Gaulle, 77610 Fontenay-Trésigny.
 
-- **Design** : nouvelle identité (logo « la part qui sourit », palette tomate / safran / basilic sur fond espresso, typographies Bricolage Grotesque + Instrument Serif + Manrope).
-- **3D** : une pizza en 3D temps réel (Three.js) dans l'en-tête de l'accueil. Au scroll, elle se découpe en 8 parts et ses garnitures s'envolent. Des ingrédients flottent autour et suivent la souris.
-- **Animations** : défilement fluide (Lenis), titres révélés mot à mot, section « signatures » à défilement horizontal, cartes inclinables en 3D, boutons magnétiques (GSAP + ScrollTrigger). Tout est désactivé si le visiteur préfère réduire les animations.
-- **Carte complète** : chaque pizza a une illustration générée automatiquement à partir de ses vrais ingrédients.
-- **Panier** : tailles Junior / Senior / Méga, offre « 2 achetées = 3e offerte » calculée automatiquement, livraison ou à emporter, récapitulatif à copier. La commande se finalise par téléphone.
+- **Design « Ember Luxe »** : mode sombre premium (noir chaud, lueur de braise orange, accents dorés), typographies Syne + Instrument Serif + Manrope, nouveau logo (arche de four à bois et flamme).
+- **Vraies photos** retouchées : recadrage, étalonnage chaud et sombre, vignettage, détourage circulaire des pizzas vues de dessus.
+- **3D au scroll** : dans l'en-tête de l'accueil, une vraie pizza détourée, avec son épaisseur et son ombre, s'incline et tourne au défilement, entourée de braises animées. On retrouve aussi une pile de 3 pizzas pour l'offre, une parallaxe sur le four à bois et une pizza « soleil » dans l'appel final.
+- **Carte complète** avec photo pour chaque pizza, pâte et dessert.
+- **Panier** : sélecteur Junior / Senior / Méga, offre « 2 achetées = 3e offerte » calculée automatiquement, livraison ou à emporter, récapitulatif à copier. La commande se finalise par téléphone.
 - **SEO** : voir la section dédiée plus bas.
 
 ## Démarrer
@@ -19,6 +19,16 @@ npm run preview   # prévisualise dist/
 ```
 
 Node.js 22.12 ou plus récent est requis.
+
+## Photos
+
+Les photos sont dans `src/assets/photos` (produits et ambiances) et `src/assets/cutouts` (pizzas détourées). Astro génère automatiquement les versions AVIF/WebP adaptées à chaque écran.
+
+**Les photos actuelles sont provisoires.** Elles proviennent de la banque d'images libre du projet open source Foodish (github.com/surhud004/Foodish), dont les droits d'usage commercial ne sont pas garantis. **Remplacez-les par vos propres photos** avant la mise en ligne : c'est plus sûr juridiquement, et vos clients verront vos vraies pizzas.
+
+Pour les remplacer :
+- soit déposez vos fichiers dans `src/assets/photos` en gardant les mêmes noms (par exemple `pizza-reine.jpg`) ;
+- soit adaptez la table de `scripts/prepare-photos.mjs`, puis lancez `node scripts/prepare-photos.mjs <dossier-de-vos-photos>` : le script recadre, étalonne et détoure automatiquement.
 
 ## Modifier le contenu
 
@@ -86,9 +96,10 @@ src/
   data/        site.ts · menu.ts · faq.ts   ← le contenu
   components/  Header, Footer, CartDrawer, PizzaCard, ItemCard, Hours, Faq…
   layouts/     Base.astro (SEO, JSON-LD, polices)
-  lib/         pizzaArt.ts (illustrations pizzas) · foodArt.ts · schema.ts (JSON-LD)
-  scripts/     pizza3d.ts (Three.js) · motion.ts (GSAP/Lenis) · cart.ts (panier)
+  assets/      photos/ · cutouts/ (vraies photos)
+  lib/         photos.ts · schema.ts (JSON-LD)
+  scripts/     home.ts (3D de l'accueil) · motion.ts (Lenis, apparitions) · cart.ts (panier)
   pages/       accueil, carte, pizzas/[slug], livraison, a-propos, contact, mentions-legales, 404
 public/        favicon, icônes, images Open Graph, robots.txt, .htaccess, _redirects, _headers
-scripts/       generate-assets.mjs
+scripts/       generate-assets.mjs · prepare-photos.mjs
 ```

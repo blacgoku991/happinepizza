@@ -184,7 +184,7 @@ export function initCart() {
     save(lines);
     render();
     showToast(`✓ Ajouté au panier : ${d.name}${d.sizeLabel ? ` ${d.sizeLabel}` : ''}`);
-    document.querySelectorAll('.cart-btn').forEach((b) => {
+    document.querySelectorAll('.icon-btn[data-cart-open]').forEach((b) => {
       b.classList.remove('bump');
       void (b as HTMLElement).offsetWidth;
       b.classList.add('bump');

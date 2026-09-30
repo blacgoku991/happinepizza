@@ -20,7 +20,7 @@ interface Props {
 }
 
 const { src, alt, sizes = '100vw', widths, priority = false, class: className, pictureClass, position } = Astro.props;
-const w = src ? (widths ?? [320, 480, 640, 800, 1080, 1400, 1800, 2400]).filter((x) => x <= src.width) : [];
+const w = src ? (widths ?? [480, 800, 1200, 1600, 2000]).filter((x) => x <= src.width) : [];
 if (src && (!w.length || w[w.length - 1] < src.width)) w.push(Math.min(src.width, 2400));
 ---
 

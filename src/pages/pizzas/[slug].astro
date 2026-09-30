@@ -1,12 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PizzaCard from '../../components/PizzaCard.astro';
-import OfferBanner from '../../components/OfferBanner.astro';
+import OfferStrip from '../../components/OfferStrip.astro';
+import Photo from '../../components/Photo.astro';
+import { pizzaPhoto, photo } from '../../lib/photos';
 import Icon from '../../components/Icon.astro';
 import { PIZZAS, SIZES, BASES, TAGS, minPrice, type Pizza } from '../../data/menu';
 import { SITE, telHref, formatPrice } from '../../data/site';
 import { breadcrumbSchema, pizzaMenuItem } from '../../lib/schema';
-import { pizzaArt } from '../../lib/pizzaArt';
 
 export function getStaticPaths() {
   return PIZZAS.map((p) => ({ params: { slug: p.slug }, props: { pizza: p } }));
@@ -20,6 +21,8 @@ const crumbs = [
   { name: 'Pizzas', path: '/carte/pizzas/' },
   { name: `Pizza ${pizza.name}`, path: `/pizzas/${pizza.slug}/` },
 ];
+const def = pizza.prices.senior != null ? 'senior' : 'junior';
+const fmt = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2 });
 const sizes = SIZES.filter((s) => pizza.prices[s.key] != null);
 const excluded = SITE.offer.conditions.toLowerCase().includes(pizza.name.toLowerCase());
 
@@ -50,11 +53,11 @@ while (description.length > 158 && ings.length > 2) {
   imageAlt={`Pizza ${pizza.name} — ${SITE.name}`}
   jsonLd={[breadcrumbSchema(crumbs), { '@context': 'https://schema.org', ...pizzaMenuItem(pizza) }]}
 >
-  <section class="pz-hero">
-    <div class="pz-hero__glow" aria-hidden="true"></div>
-    <div class="container pz-hero__grid">
-      <div class="pz-hero__text">
-        <nav aria-label="Fil d'Ariane" class="crumbs" data-reveal>
+  <section class="pzh">
+    <div class="pzh__bg" aria-hidden="true"><Photo src={photo('ambiance-ardoise')} alt="" sizes="100vw" class="pzh__bgimg" /></div>
+    <div class="wrap pzh__grid">
+      <div class="pzh__txt" data-pcard>
+        <nav aria-label="Fil d'Ariane" class="crumbs">
           <ol>
             {
               crumbs.map((c, i) => (
@@ -62,7 +65,7 @@ while (description.length > 158 && ings.length > 2) {
                   {i < crumbs.length - 1 ? (
                     <>
                       <a href={c.path}>{c.name}</a>
-                      <Icon name="arrow" size={14} />
+                      <Icon name="arrow" size={13} />
                     </>
                   ) : (
                     <span aria-current="page">{c.name}</span>
@@ -72,416 +75,409 @@ while (description.length > 158 && ings.length > 2) {
             }
           </ol>
         </nav>
-
-        <div class="pz-hero__tags" data-reveal>
-          <span class="tag tag--ink">{BASES[pizza.base]}</span>
-          {pizza.tags?.map((t) => <span class={`tag tag--${TAGS[t].color}`}>{TAGS[t].label}</span>)}
+        <div class="pzh__tags">
+          <span class="pill">{BASES[pizza.base]}</span>
+          {pizza.tags?.map((t) => <span class:list={['pill', { 'pill--ember': t === 'best' || t === 'signature', 'pill--basil': t === 'vege' }]}>{TAGS[t].label}</span>)}
         </div>
+        <h1 class="h1 pzh__title">Pizza <em class="grad">{pizza.name}</em></h1>
+        <p class="lead">{pizza.pitch}</p>
 
-        <h1 class="pz-hero__title" data-split data-split-now>
-          Pizza <span class="serif text-saffron">{pizza.name}</span>
-        </h1>
-        <p class="lead pz-hero__pitch" data-reveal data-delay="0.2">{pizza.pitch}</p>
+        <h2 class="pzh__label">Ingrédients</h2>
+        <ul class="pzh__ings">{pizza.ingredients.map((i) => <li>{i}</li>)}</ul>
 
-        <div data-reveal data-delay="0.3">
-          <h2 class="pz-hero__label">Ingrédients</h2>
-          <ul class="pz-ings">
-            {pizza.ingredients.map((ing) => <li>{ing}</li>)}
-          </ul>
+        <h2 class="pzh__label">Choisissez votre taille</h2>
+        <div class="sizes" role="radiogroup" aria-label="Taille">
+          {
+            sizes.map((s) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={s.key === def ? 'true' : 'false'}
+                class:list={{ on: s.key === def }}
+                data-size={s.key}
+                data-label={s.label}
+                data-price={pizza.prices[s.key]}
+                data-offer={s.key !== 'junior' && !excluded ? '1' : '0'}
+              >
+                <span>{s.label}</span>
+                <b>{fmt(pizza.prices[s.key]!)} €</b>
+              </button>
+            ))
+          }
         </div>
-
-        <div data-reveal data-delay="0.4">
-          <h2 class="pz-hero__label">Choisissez votre taille</h2>
-          <div class="pz-sizes">
-            {
-              sizes.map((s) => (
-                <button
-                  type="button"
-                  class="pz-size"
-                  data-add
-                  data-id={`${pizza.slug}:${s.key}`}
-                  data-name={`Pizza ${pizza.name}`}
-                  data-size-label={s.label}
-                  data-price={pizza.prices[s.key]}
-                  data-offer={s.key !== 'junior' && !excluded ? '1' : '0'}
-                >
-                  <span class="pz-size__label">{s.label}</span>
-                  <span class="pz-size__price">{formatPrice(pizza.prices[s.key]!)}</span>
-                  <span class="pz-size__add">
-                    <Icon name="plus" size={16} /> Ajouter
-                  </span>
-                </button>
-              ))
-            }
-          </div>
-        </div>
-
-        <div class="pz-hero__ctas" data-reveal data-delay="0.5">
-          <a href={telHref} class="btn btn--lg" data-magnetic><Icon name="phone" /> Commander au {SITE.phone}</a>
-          <button type="button" class="btn btn--lg btn--ghost" data-cart-open><Icon name="bag" /> Voir mon panier</button>
+        <div class="ctas pzh__ctas">
+          <button
+            type="button"
+            class="btn btn-ember add"
+            data-add
+            data-slug={pizza.slug}
+            data-id={`${pizza.slug}:${def}`}
+            data-name={`Pizza ${pizza.name}`}
+            data-size-label={SIZES.find((s) => s.key === def)!.label}
+            data-price={pizza.prices[def]}
+            data-offer={def !== 'junior' && !excluded ? '1' : '0'}
+          >
+            <Icon name="plus" stroke={2.2} /> Ajouter · <span class="add__pr">{formatPrice(pizza.prices[def]!)}</span>
+          </button>
+          <a class="btn btn-glass" href={telHref}><span class="dot"><Icon name="phone" /></span>{SITE.phone}</a>
         </div>
       </div>
 
-      <div class="pz-stage" data-pz-stage aria-hidden="true">
-        <div class="pz-stage__board"></div>
-        <div class="pz-stage__pizza" data-pz-pizza set:html={pizzaArt(pizza)} />
-        <div class="pz-stage__shadow"></div>
+      <div class="plate" data-plate aria-hidden="true">
+        <div class="plate__glow"></div>
+        <div class="plate__disc" data-plate-disc>
+          <Photo src={pizzaPhoto(pizza)} alt="" sizes="(min-width: 900px) 520px, 90vw" widths={[480, 640, 800, 1000]} priority class="plate__img" />
+        </div>
+        <span class="plate__price"><small>dès</small>{formatPrice(minPrice(pizza))}</span>
       </div>
     </div>
   </section>
 
-  <div class="on-light pz-body">
-    <section class="container pz-info" aria-labelledby="prices-title">
+  <section class="sec--tight">
+    <div class="wrap info">
       <div>
-        <span class="eyebrow">Tailles & prix</span>
-        <h2 id="prices-title" class="h-2">La {pizza.name}, <span class="serif">à votre faim.</span></h2>
-        <p class="muted">{infoText}</p>
+        <span class="eyebrow">Tailles &amp; prix</span>
+        <h2 class="h2">La {pizza.name},<em class="grad block">à votre faim.</em></h2>
+        <p class="lead">{infoText}</p>
       </div>
-      <table class="pz-table">
+      <table class="ptable">
         <caption class="sr-only">Prix de la pizza {pizza.name} selon la taille</caption>
-        <thead>
-          <tr><th scope="col">Taille</th><th scope="col">Prix</th></tr>
-        </thead>
+        <thead><tr><th scope="col">Taille</th><th scope="col">Prix</th></tr></thead>
         <tbody>
-          {
-            sizes.map((s) => (
-              <tr>
-                <th scope="row">Pizza {pizza.name} {s.label}</th>
-                <td class="price">{formatPrice(pizza.prices[s.key]!)}</td>
-              </tr>
-            ))
-          }
+          {sizes.map((s) => (
+            <tr>
+              <th scope="row">Pizza {pizza.name} <span>{s.label}</span></th>
+              <td>{formatPrice(pizza.prices[s.key]!)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-    </section>
+    </div>
+    {!excluded && <div class="wrap"><OfferStrip /></div>}
+  </section>
 
-    {!excluded && <div class="container"><OfferBanner /></div>}
-
-    <section class="container pz-related" aria-labelledby="related-title">
-      <div class="pz-related__head">
-        <h2 id="related-title" class="h-2">Vous aimerez <span class="serif">aussi</span></h2>
-        <a href="/carte/pizzas/" class="btn btn--ghost">Toutes les pizzas <Icon name="arrow" /></a>
+  <section class="sec--tight" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="h2">Vous aimerez<em class="grad block">aussi.</em></h2>
+        <a class="link-arrow" href="/carte/pizzas/">Toutes les pizzas <Icon name="arrow" /></a>
       </div>
-      <ul class="grid-pizzas">
-        {related.map((p) => <li><PizzaCard pizza={p} /></li>)}
-      </ul>
-      <nav class="pz-pager" aria-label="Pizza précédente et suivante">
+      <ul class="grid-pizzas">{related.map((p) => <li><PizzaCard pizza={p} /></li>)}</ul>
+      <nav class="pager" aria-label="Pizza précédente et suivante">
         <a href={`/pizzas/${prev.slug}/`} rel="prev"><span>← Précédente</span><strong>Pizza {prev.name}</strong></a>
         <a href={`/pizzas/${next.slug}/`} rel="next"><span>Suivante →</span><strong>Pizza {next.name}</strong></a>
       </nav>
-    </section>
-  </div>
+    </div>
+  </section>
 </Base>
 
 <style>
-  .pz-hero {
+  .pzh {
     position: relative;
-    padding-top: calc(var(--header-h) + clamp(32px, 5vw, 64px));
-    padding-bottom: clamp(56px, 7vw, 100px);
-    overflow: hidden;
     isolation: isolate;
+    overflow: clip;
+    padding: calc(var(--hdr) + clamp(32px, 5vw, 64px)) 0 clamp(56px, 7vw, 100px);
   }
-  .pz-hero__glow {
+  .pzh__bg {
     position: absolute;
+    inset: 0;
     z-index: -1;
-    width: 60vw;
-    height: 60vw;
-    right: -15vw;
-    top: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 77, 31, 0.38), transparent 62%);
-    filter: blur(50px);
+    opacity: 0.35;
   }
-  .pz-hero__grid {
+  .pzh__bg :global(picture),
+  .pzh__bg :global(.pzh__bgimg) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(6px);
+  }
+  .pzh__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 70% at 75% 50%, rgba(255, 86, 24, 0.25), transparent 70%),
+      linear-gradient(90deg, var(--bg) 0%, rgba(10, 8, 7, 0.85) 45%, rgba(10, 8, 7, 0.5) 100%),
+      linear-gradient(180deg, transparent 60%, var(--bg));
+  }
+  .pzh__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(32px, 5vw, 72px);
+    grid-template-columns: 1.05fr 1fr;
+    gap: clamp(32px, 5vw, 80px);
     align-items: center;
-  }
-  .pz-hero__text {
-    display: grid;
-    gap: 22px;
-    justify-items: start;
   }
   .crumbs ol {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
+    gap: 8px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--muted-on-dark);
+    color: var(--muted);
   }
   .crumbs li {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
   .crumbs a:hover,
   .crumbs [aria-current] {
-    color: var(--cream);
+    color: var(--text);
   }
-  .crumbs :global(svg) {
-    opacity: 0.5;
-  }
-  .pz-hero__tags {
+  .pzh__tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    margin-top: 26px;
   }
-  .pz-hero__tags .tag--ink {
-    background: var(--cream);
-    color: var(--ink);
+  .pzh__title {
+    margin-top: 22px;
+    font-size: clamp(48px, 6.4vw, 96px);
   }
-  .pz-hero__title {
-    font-size: clamp(3.2rem, 8vw, 7rem);
-    line-height: 0.92;
-    letter-spacing: -0.05em;
+  .pzh__title em {
+    display: block;
+    font-size: 1.15em;
+    line-height: 0.95;
   }
-  .pz-hero__pitch {
-    max-width: 46ch;
-    color: var(--muted-on-dark);
-  }
-  .pz-hero__label {
-    font-family: var(--font-body);
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
+  .pzh__label {
+    margin: 30px 0 12px;
+    font: 700 11px/1 var(--sans);
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--saffron);
-    margin-bottom: 12px;
+    color: var(--dim);
   }
-  .pz-ings {
+  .pzh__ings {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 7px;
   }
-  .pz-ings li {
+  .pzh__ings li {
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(255, 246, 234, 0.07);
-    border: 1px solid var(--line-dark);
+    border: 1px solid var(--line-2);
+    background: rgba(255, 240, 228, 0.04);
+    font-size: 13.5px;
     font-weight: 600;
-    font-size: 0.92rem;
+    color: #e1d5c9;
   }
-  .pz-sizes {
+  .sizes {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 150px));
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 140px));
+    gap: 6px;
   }
-  .pz-size {
+  .sizes button {
     display: grid;
-    gap: 4px;
+    gap: 6px;
     justify-items: start;
     padding: 14px 16px;
-    border-radius: 20px;
-    background: rgba(255, 246, 234, 0.06);
-    border: 1.5px solid var(--line-dark);
-    text-align: left;
-    transition:
-      border-color 0.25s,
-      background-color 0.25s,
-      transform 0.3s var(--ease-spring);
+    border-radius: 18px;
+    border: 1px solid var(--line-2);
+    background: rgba(255, 240, 228, 0.03);
+    transition: background 0.3s, border-color 0.3s;
   }
-  .pz-size:hover {
-    border-color: var(--tomato);
-    background: rgba(255, 77, 31, 0.12);
-  }
-  .pz-size:active {
-    transform: scale(0.96);
-  }
-  .pz-size__label {
-    font-size: 0.75rem;
-    font-weight: 800;
+  .sizes span {
+    font: 700 10px/1 var(--sans);
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted-on-dark);
+    color: var(--dim);
   }
-  .pz-size__price {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 800;
+  .sizes b {
+    font: 700 22px/1 var(--display);
     letter-spacing: -0.03em;
+    color: #d7c9bc;
   }
-  .pz-size__add {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-    padding: 5px 10px 5px 7px;
-    border-radius: 999px;
-    background: var(--tomato);
-    font-size: 0.8rem;
-    font-weight: 700;
+  .sizes button:hover {
+    border-color: rgba(255, 150, 90, 0.5);
   }
-  .pz-size:global(.is-added) .pz-size__add {
-    background: var(--basil);
+  .sizes button.on {
+    background: linear-gradient(180deg, rgba(255, 130, 60, 0.2), rgba(255, 90, 31, 0.06));
+    border-color: rgba(255, 140, 70, 0.6);
   }
-  .pz-hero__ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+  .sizes button.on span {
+    color: var(--gold);
+  }
+  .sizes button.on b {
+    color: #fff;
+  }
+  .pzh__ctas {
+    margin-top: 26px;
   }
 
-  .pz-stage {
+  .plate {
     position: relative;
     aspect-ratio: 1;
-    perspective: 1200px;
-    display: grid;
-    place-items: center;
+    perspective: 1400px;
   }
-  .pz-stage__board {
+  .plate__glow {
+    position: absolute;
+    inset: -20%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 140, 60, 0.45), rgba(255, 86, 24, 0.15) 50%, transparent 75%);
+  }
+  .plate__disc {
     position: absolute;
     inset: 4%;
     border-radius: 50%;
-    background:
-      repeating-radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 9px),
-      radial-gradient(circle, #8b5a2b, #5e3a1a);
-    transform: rotateX(var(--tilt, 0deg)) translateZ(-30px);
-    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255, 220, 190, 0.15),
+      0 0 0 14px rgba(255, 240, 228, 0.03),
+      0 60px 90px -30px rgba(0, 0, 0, 0.9);
+    transform: rotateX(var(--tx, 18deg)) rotateZ(var(--tz, 0deg));
+    will-change: transform;
   }
-  .pz-stage__pizza {
-    position: relative;
-    width: 84%;
-    transform: rotateX(var(--tilt, 0deg)) rotateZ(var(--spin, 0deg));
-    filter: drop-shadow(0 22px 24px rgba(0, 0, 0, 0.5));
+  .plate__disc :global(picture),
+  .plate__disc :global(.plate__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-  .pz-stage__shadow {
-    display: none;
+  .plate__price {
+    position: absolute;
+    right: 2%;
+    top: 8%;
+    display: grid;
+    padding: 14px 20px;
+    border-radius: 20px;
+    background: rgba(20, 14, 11, 0.6);
+    border: 1px solid var(--line-2);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    font: 700 28px/1 var(--display);
+    letter-spacing: -0.04em;
+  }
+  .plate__price small {
+    font: italic 400 16px/1 var(--serif);
+    color: var(--gold);
+    margin-bottom: 4px;
   }
 
-  .pz-body {
-    padding-block: clamp(64px, 8vw, 120px);
-  }
-  .pz-info {
+  .info {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: clamp(32px, 6vw, 90px);
     align-items: center;
   }
-  .pz-info > div {
-    display: grid;
-    gap: 18px;
-  }
-  .pz-table {
+  .ptable {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    border-radius: var(--radius);
+    border-radius: 24px;
     overflow: hidden;
-    background: #fff;
-    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+    border: 1px solid var(--line);
+    background: var(--card);
   }
-  .pz-table th,
-  .pz-table td {
+  .ptable th,
+  .ptable td {
     padding: 18px 22px;
     text-align: left;
-    border-bottom: 1px solid var(--line-light);
+    border-bottom: 1px solid var(--line);
   }
-  .pz-table thead th {
-    background: var(--ink);
-    color: var(--cream);
-    font-size: 0.8rem;
-    letter-spacing: 0.12em;
+  .ptable thead th {
+    font: 700 10.5px/1 var(--sans);
+    letter-spacing: 0.2em;
     text-transform: uppercase;
+    color: var(--dim);
   }
-  .pz-table td {
+  .ptable tbody th {
+    font-weight: 600;
+  }
+  .ptable tbody th span {
+    color: var(--gold);
+  }
+  .ptable td {
     text-align: right;
-    font-size: 1.3rem;
+    font: 700 22px/1 var(--display);
+    letter-spacing: -0.03em;
   }
-  .pz-table tbody tr:last-child > * {
+  .ptable tbody tr:last-child > * {
     border-bottom: 0;
   }
-  .pz-related {
-    margin-top: clamp(64px, 8vw, 110px);
-  }
-  .pz-related__head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: end;
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  .pz-pager {
+  .pager {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-top: 40px;
   }
-  .pz-pager a {
+  .pager a {
     display: grid;
-    gap: 4px;
+    gap: 6px;
     padding: 20px 24px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--line-light);
-    transition:
-      border-color 0.25s,
-      background-color 0.25s;
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    transition: border-color 0.3s, background 0.3s;
   }
-  .pz-pager a:hover {
-    border-color: var(--ink);
-    background: #fff;
+  .pager a:hover {
+    border-color: rgba(255, 140, 70, 0.45);
+    background: rgba(255, 240, 228, 0.03);
   }
-  .pz-pager a[rel='next'] {
+  .pager a[rel='next'] {
     text-align: right;
   }
-  .pz-pager span {
-    font-size: 0.85rem;
-    color: var(--muted-on-light);
-    font-weight: 600;
+  .pager span {
+    font-size: 13px;
+    color: var(--muted);
   }
-  .pz-pager strong {
-    font-family: var(--font-display);
-    font-size: 1.3rem;
+  .pager strong {
+    font: 700 20px/1.1 var(--display);
     letter-spacing: -0.02em;
   }
   @media (max-width: 900px) {
-    .pz-hero__grid,
-    .pz-info {
+    .pzh__grid,
+    .info {
       grid-template-columns: 1fr;
     }
-    .pz-stage {
+    .plate {
       order: -1;
       width: min(100%, 420px);
-      margin-inline: auto;
+      margin: 0 auto 10px;
     }
   }
   @media (max-width: 480px) {
-    .pz-sizes {
+    .sizes {
       grid-template-columns: repeat(3, 1fr);
     }
-    .pz-size {
-      padding: 12px 10px;
+    .sizes button {
+      padding: 12px;
     }
-    .pz-size__price {
-      font-size: 1.25rem;
+    .sizes b {
+      font-size: 17px;
     }
   }
 </style>
 
 <script>
-  import { gsap, ScrollTrigger } from '../../scripts/motion';
-  const stage = document.querySelector<HTMLElement>('[data-pz-stage]');
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (stage && !reduce) {
-    const state = { tilt: 0, spin: 0 };
-    const apply = () => {
-      stage.style.setProperty('--tilt', `${state.tilt}deg`);
-      stage.style.setProperty('--spin', `${state.spin}deg`);
-    };
-    // rotation continue + inclinaison 3D au scroll
-    gsap.to(state, { spin: 360, duration: 60, repeat: -1, ease: 'none', onUpdate: apply });
-    gsap.fromTo(
-      state,
-      { tilt: 0 },
-      {
-        tilt: 58,
-        ease: 'none',
-        onUpdate: apply,
-        scrollTrigger: { trigger: stage, start: 'top 20%', end: 'bottom top', scrub: true },
-      },
+  // taille → bouton Ajouter
+  document.querySelectorAll<HTMLElement>('[data-pcard]').forEach((box) => {
+    const add = box.querySelector<HTMLButtonElement>('.add');
+    if (!add || !box.classList.contains('pzh__txt')) return;
+    const pr = add.querySelector('.add__pr')!;
+    const btns = [...box.querySelectorAll<HTMLButtonElement>('.sizes button')];
+    btns.forEach((b) =>
+      b.addEventListener('click', () => {
+        btns.forEach((x) => {
+          x.classList.toggle('on', x === b);
+          x.setAttribute('aria-checked', String(x === b));
+        });
+        const price = Number(b.dataset.price);
+        add.dataset.id = `${add.dataset.slug}:${b.dataset.size}`;
+        add.dataset.sizeLabel = b.dataset.label;
+        add.dataset.price = String(price);
+        add.dataset.offer = b.dataset.offer;
+        pr.textContent = price.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) + ' €';
+      }),
     );
-    ScrollTrigger.refresh();
+  });
+  // assiette 3D : rotation lente + redressement au scroll
+  const disc = document.querySelector<HTMLElement>('[data-plate-disc]');
+  if (disc && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const t0 = performance.now();
+    const loop = (now: number) => {
+      const p = Math.min(1, scrollY / (innerHeight * 0.8));
+      disc.style.setProperty('--tx', `${18 + p * 34}deg`);
+      disc.style.setProperty('--tz', `${((now - t0) / 1000) * 4 + p * 90}deg`);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 </script>

@@ -16,9 +16,9 @@ const L = SITE.legal;
   description={`Mentions légales et politique de confidentialité du site ${SITE.name} (${SITE.address.city}).`}
   jsonLd={[breadcrumbSchema(crumbs)]}
 >
-  <PageHero crumbs={crumbs} title="Mentions légales" compact />
-  <section class="section--tight on-light">
-    <div class="container prose">
+  <PageHero crumbs={crumbs} title="Mentions légales" compact photo="ambiance-rustique" />
+  <section class="sec--tight">
+    <div class="wrap prose">
       <h2>Éditeur du site</h2>
       <p>
         Le site {SITE.url.replace('https://', '')} est édité par <strong>{SITE.legalName}</strong>, {L.form}, immatriculée au {L.rcs} sous le numéro
@@ -72,8 +72,3 @@ const L = SITE.legal;
   </section>
 </Base>
 
-<style>
-  .section--tight {
-    padding-bottom: clamp(80px, 10vw, 140px);
-  }
-</style>

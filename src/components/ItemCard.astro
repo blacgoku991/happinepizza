@@ -1,151 +1,249 @@
 ---
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
 import { TAGS, type Item } from '../data/menu';
 import { formatPrice } from '../data/site';
-import Photo from './Photo.astro';
 import { photo } from '../lib/photos';
-import Icon from './Icon.astro';
 
 interface Props {
   item: Item;
   category: string;
   headingLevel?: 'h2' | 'h3';
+  variant?: 'row' | 'combo';
 }
-const { item, category, headingLevel = 'h3' } = Astro.props;
+const { item, category, headingLevel = 'h3', variant = 'row' } = Astro.props;
 const H = headingLevel;
+const img = photo(item.photo);
+const tag = item.tags?.[0] ? TAGS[item.tags[0]].label : undefined;
 ---
 
-<article class="icard" data-filter-item data-tags={(item.tags ?? []).join(' ')} data-search={`${item.name} ${item.description ?? ''}`.toLowerCase()}>
-  <div class="icard__art">
-    <Photo src={photo(item.photo)} alt={item.name} sizes="124px" widths={[160, 250, 320]} class="icard__img" />
-  </div>
-  <div class="icard__body">
-    {
-      item.tags && item.tags.length > 0 && (
-        <ul class="icard__tags">
-          {item.tags.map((t) => (
-            <li class={`tag tag--${TAGS[t].color}`}>{TAGS[t].label}</li>
-          ))}
-        </ul>
-      )
-    }
-    <H class="icard__name">{item.name}</H>
-    {item.description && <p class="icard__desc">{item.description}</p>}
-    <div class="icard__foot">
-      <span class="icard__price price">{formatPrice(item.price)}</span>
-      <button
-        type="button"
-        class="icard__add"
-        data-add
-        data-id={`${category}:${item.slug}`}
-        data-name={item.name}
-        data-price={item.price}
-        data-offer="0"
-        aria-label={`Ajouter ${item.name} au panier`}
-      >
-        <Icon name="plus" size={18} /> <span>Ajouter</span>
-      </button>
-    </div>
-  </div>
-</article>
+{
+  variant === 'combo' ? (
+    <article class="combo" data-filter-item>
+      <div class="combo__media">
+        {img ? <Photo src={img} alt={item.name} sizes="(min-width: 900px) 260px, 40vw" widths={[260, 400, 560]} class="combo__img" /> : <span class="combo__ph" />}
+      </div>
+      <div class="combo__body">
+        {tag && <span class="pill pill--ember combo__pill">{tag}</span>}
+        <H class="combo__name">{item.name}</H>
+        {item.description && <p class="combo__desc">{item.description}</p>}
+        <div class="combo__price">
+          <b>{formatPrice(item.price)}</b>
+          <button type="button" class="mini-add" data-add data-id={`${category}:${item.slug}`} data-name={item.name} data-price={item.price} data-offer="0" aria-label={`Ajouter ${item.name} au panier`}>
+            <Icon name="plus" stroke={2} />
+          </button>
+        </div>
+      </div>
+    </article>
+  ) : (
+    <article class:list={['row', { 'row--noimg': !img }]} data-filter-item data-tags={(item.tags ?? []).join(' ')}>
+      {img && <Photo src={img} alt="" sizes="64px" widths={[128, 192]} class="row__img" />}
+      <div class="row__txt">
+        <H class="row__name">
+          {item.name}
+          {tag && <span class="row__tag">{tag}</span>}
+        </H>
+        {item.description && <p class="row__desc">{item.description}</p>}
+      </div>
+      <div class="row__end">
+        <span class="row__pr">{formatPrice(item.price)}</span>
+        <button type="button" class="mini-add" data-add data-id={`${category}:${item.slug}`} data-name={item.name} data-price={item.price} data-offer="0" aria-label={`Ajouter ${item.name} au panier`}>
+          <Icon name="plus" stroke={2} />
+        </button>
+      </div>
+    </article>
+  )
+}
 
 <style>
-  .icard {
-    display: grid;
-    grid-template-columns: 124px 1fr;
-    gap: 18px;
-    align-items: center;
-    padding: 16px;
-    border-radius: var(--radius);
-    background: #fff;
-    color: var(--text-on-light);
-    box-shadow: 0 24px 50px -36px rgba(60, 20, 0, 0.4);
-    transition: transform 0.5s var(--ease-out);
-  }
-  .icard:hover {
-    transform: translateY(-4px);
-  }
-  .icard__art {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 20px;
-    background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--tint, var(--saffron)) 22%, #fff7ec), var(--cream));
+  .mini-add {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
     display: grid;
     place-items: center;
+    border: 1px solid var(--line-2);
+    transition:
+      background 0.3s,
+      color 0.3s,
+      border-color 0.3s,
+      transform 0.4s var(--spring);
+  }
+  .mini-add:hover,
+  .mini-add:global(.is-added) {
+    background: var(--grad-btn);
+    color: #170903;
+    border-color: transparent;
+  }
+  .mini-add:global(.is-added) {
+    transform: rotate(90deg);
+  }
+
+  /* ligne */
+  .row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .row--noimg {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .row :global(.row__img) {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow:
+      0 0 0 1px rgba(255, 232, 214, 0.12),
+      0 10px 24px -10px rgba(0, 0, 0, 0.8);
+    transition: transform 0.6s var(--ease);
+  }
+  .row:hover :global(.row__img) {
+    transform: scale(1.1) rotate(-6deg);
+  }
+  .row__name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font: 700 16px/1.3 var(--sans);
+  }
+  .row__tag {
+    font: 700 9.5px/1 var(--sans);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 5px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 197, 126, 0.3);
+  }
+  .row__desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 3px;
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .row__end {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .row__pr {
+    font: 600 18px/1 var(--display);
+    letter-spacing: -0.02em;
+    color: var(--gold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* formule */
+  .combo {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 44% 1fr;
+    border-radius: 28px;
+    overflow: clip;
+    background: var(--card);
+    border: 1px solid var(--line);
+    min-height: 230px;
+    transition: border-color 0.4s;
+  }
+  .combo:hover {
+    border-color: rgba(255, 130, 60, 0.3);
+  }
+  .combo__media {
+    position: relative;
     overflow: hidden;
   }
-  .icard__art :global(.icard__img) {
+  .combo__media :global(picture),
+  .combo__media :global(.combo__img) {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.8s var(--ease-spring);
+    transition: transform 1.2s var(--ease);
   }
-  .icard:hover .icard__art :global(.icard__img) {
-    transform: scale(1.08) rotate(-6deg);
+  .combo:hover .combo__media :global(.combo__img) {
+    transform: scale(1.07);
   }
-  .icard__body {
+  .combo__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 60%, rgba(17, 13, 11, 0.9));
+  }
+  .combo__ph {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 40% 40%, rgba(255, 110, 40, 0.35), transparent 60%), #1a1310;
+  }
+  .combo__body {
+    padding: 26px 24px 24px 20px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    min-width: 0;
   }
-  .icard__tags {
-    display: flex;
-    gap: 6px;
+  .combo__pill {
+    align-self: flex-start;
+    margin-bottom: 14px;
   }
-  .icard__name {
-    font-size: 1.3rem;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
+  .combo__name {
+    font: 700 25px/1.05 var(--display);
+    letter-spacing: -0.035em;
   }
-  .icard__desc {
-    font-size: 0.9rem;
-    line-height: 1.45;
-    color: var(--muted-on-light);
+  .combo__desc {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
   }
-  .icard__foot {
+  .combo__price {
+    margin-top: auto;
+    padding-top: 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 6px;
   }
-  .icard__price {
-    font-size: 1.25rem;
+  .combo__price b {
+    font: 700 32px/1 var(--display);
+    letter-spacing: -0.045em;
   }
-  .icard__add {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 14px 9px 10px;
-    border-radius: 999px;
-    background: var(--ink);
-    color: var(--cream);
-    font-weight: 700;
-    font-size: 0.88rem;
-    transition:
-      background-color 0.25s,
-      transform 0.3s var(--ease-spring);
-  }
-  .icard__add:hover {
-    background: var(--tomato);
-  }
-  .icard__add:active {
-    transform: scale(0.95);
-  }
-  .icard__add:global(.is-added) {
-    background: var(--basil);
-  }
-  @media (max-width: 420px) {
-    .icard {
-      grid-template-columns: 96px 1fr;
-      gap: 14px;
-      padding: 12px;
+  @media (max-width: 760px) {
+    .row {
+      grid-template-columns: 54px minmax(0, 1fr) auto;
+      gap: 12px;
     }
-    .icard__add span {
-      display: none;
+    .row :global(.row__img) {
+      width: 54px;
+      height: 54px;
     }
-    .icard__add {
-      padding: 10px;
+    .row__end {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .combo {
+      grid-template-columns: 40% 1fr;
+      min-height: 190px;
+    }
+    .combo__body {
+      padding: 18px 16px 16px 12px;
+    }
+    .combo__name {
+      font-size: 20px;
+    }
+    .combo__price b {
+      font-size: 26px;
     }
   }
 </style>

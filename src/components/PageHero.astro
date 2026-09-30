@@ -1,8 +1,11 @@
 ---
 /**
- * En-tête des pages internes : fil d'Ariane + titre + intro + visuel optionnel (slot "art").
+ * En-tête des pages internes : photo d'ambiance plein cadre assombrie, fil d'Ariane, titre.
  */
+import type { ImageMetadata } from 'astro';
 import Icon from './Icon.astro';
+import Photo from './Photo.astro';
+import { photo as getPhoto } from '../lib/photos';
 
 interface Props {
   crumbs: Array<{ name: string; path: string }>;
@@ -10,132 +13,110 @@ interface Props {
   title: string;
   titleAccent?: string;
   intro?: string;
+  photo?: string;
+  image?: ImageMetadata;
   compact?: boolean;
 }
-const { crumbs, eyebrow, title, titleAccent, intro, compact = false } = Astro.props;
-const hasArt = Astro.slots.has('art');
+const { crumbs, eyebrow, title, titleAccent, intro, photo = 'ambiance-ardoise', image, compact = false } = Astro.props;
+const bg = image ?? getPhoto(photo);
 ---
 
-<section class:list={['phero', { 'phero--compact': compact, 'phero--art': hasArt }]}>
-  <div class="phero__glow" aria-hidden="true"></div>
-  <div class="container phero__grid">
-    <div class="phero__text">
-      <nav aria-label="Fil d'Ariane" class="crumbs" data-reveal>
-        <ol>
-          {
-            crumbs.map((c, i) => (
-              <li>
-                {i < crumbs.length - 1 ? (
-                  <>
-                    <a href={c.path}>{c.name}</a>
-                    <Icon name="arrow" size={14} />
-                  </>
-                ) : (
-                  <span aria-current="page">{c.name}</span>
-                )}
-              </li>
-            ))
-          }
-        </ol>
-      </nav>
-      {eyebrow && <span class="eyebrow" data-reveal>{eyebrow}</span>}
-      <h1 class="h-1 phero__title" data-split data-split-now>
-        {title}
-        {titleAccent && <span class="serif text-saffron">{titleAccent}</span>}
-      </h1>
-      {intro && <p class="lead muted phero__intro" data-reveal data-delay="0.2">{intro}</p>}
-      <slot />
-    </div>
-    {
-      hasArt && (
-        <div class="phero__art" data-reveal data-delay="0.15">
-          <slot name="art" />
-        </div>
-      )
-    }
+<section class:list={['phero', { 'phero--compact': compact }]}>
+  <div class="phero__bg" aria-hidden="true">
+    <Photo src={bg} alt="" sizes="100vw" priority class="phero__img" />
+  </div>
+  <div class="wrap phero__in">
+    <nav aria-label="Fil d'Ariane" class="crumbs">
+      <ol>
+        {
+          crumbs.map((c, i) => (
+            <li>
+              {i < crumbs.length - 1 ? (
+                <>
+                  <a href={c.path}>{c.name}</a>
+                  <Icon name="arrow" size={13} />
+                </>
+              ) : (
+                <span aria-current="page">{c.name}</span>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1 class="h2 phero__title">
+      {title}
+      {titleAccent && <em class="grad block">{titleAccent}</em>}
+    </h1>
+    {intro && <p class="lead">{intro}</p>}
+    <slot />
   </div>
 </section>
 
 <style>
   .phero {
     position: relative;
-    padding-top: calc(var(--header-h) + clamp(40px, 7vw, 90px));
-    padding-bottom: clamp(56px, 8vw, 110px);
-    overflow: hidden;
     isolation: isolate;
+    overflow: clip;
+    padding: calc(var(--hdr) + clamp(48px, 8vw, 110px)) 0 clamp(64px, 8vw, 110px);
+    min-height: min(78vh, 720px);
+    display: flex;
+    align-items: flex-end;
   }
   .phero--compact {
-    padding-bottom: clamp(32px, 5vw, 60px);
+    min-height: 0;
+    padding-bottom: clamp(40px, 5vw, 64px);
   }
-  .phero__glow {
+  .phero__bg {
     position: absolute;
+    inset: 0;
     z-index: -1;
-    width: 70vw;
-    height: 70vw;
-    right: -25vw;
-    top: -30vw;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 77, 31, 0.32), transparent 62%);
-    filter: blur(40px);
   }
-  .phero__grid {
-    display: grid;
-    gap: 40px;
-    align-items: center;
+  .phero__bg :global(picture),
+  .phero__bg :global(.phero__img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-  .phero--art .phero__grid {
-    grid-template-columns: 1.15fr 1fr;
+  .phero__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(10, 8, 7, 0.94) 0%, rgba(10, 8, 7, 0.75) 38%, rgba(10, 8, 7, 0.3) 75%, rgba(10, 8, 7, 0.45) 100%),
+      linear-gradient(180deg, rgba(10, 8, 7, 0.6) 0%, rgba(10, 8, 7, 0) 30%, rgba(10, 8, 7, 0.2) 70%, var(--bg) 100%);
   }
-  .phero__text {
-    display: grid;
-    gap: 22px;
-    justify-items: start;
+  .phero--compact .phero__bg::after {
+    background: linear-gradient(180deg, rgba(10, 8, 7, 0.82), rgba(10, 8, 7, 0.9) 60%, var(--bg));
+  }
+  .phero__in {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
   .phero__title {
-    max-width: 16ch;
+    max-width: 14ch;
   }
-  .phero__title .serif {
-    display: inline;
-  }
-  .phero__intro {
-    max-width: 58ch;
-  }
-  .phero__art {
-    display: grid;
-    place-items: center;
-    width: 100%;
+  .crumbs {
+    margin-bottom: 26px;
   }
   .crumbs ol {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
+    gap: 8px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--muted-on-dark);
+    color: var(--muted);
   }
   .crumbs li {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
   }
-  .crumbs a:hover {
-    color: var(--cream);
-  }
-  .crumbs :global(svg) {
-    opacity: 0.5;
-  }
+  .crumbs a:hover,
   .crumbs [aria-current] {
-    color: var(--cream);
-  }
-  @media (max-width: 900px) {
-    .phero--art .phero__grid {
-      grid-template-columns: 1fr;
-    }
-    .phero__art {
-      order: -1;
-      width: min(100%, 300px);
-      margin-inline: auto;
-    }
+    color: var(--text);
   }
 </style>

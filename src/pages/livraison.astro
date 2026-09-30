@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
 import Faq from '../components/Faq.astro';
-import Hours from '../components/Hours.astro';
+import HoursPanel from '../components/HoursPanel.astro';
 import Icon from '../components/Icon.astro';
 import { SITE, telHref } from '../data/site';
 import { FAQS } from '../data/faq';
@@ -39,53 +39,38 @@ const deliverySchema = {
     crumbs={crumbs}
     eyebrow="Livraison"
     title="Vos pizzas livrées"
-    titleAccent=" bien chaudes."
+    titleAccent="bien chaudes."
     intro={`Livraison gratuite à ${city} et dans les communes voisines, dans un rayon de ${SITE.delivery.radiusKm} km, dès ${SITE.delivery.minOrder} € de commande.`}
+    photo="ambiance-mains"
   >
-    <div class="liv-ctas" data-reveal data-delay="0.3">
-      <a href={telHref} class="btn btn--lg" data-magnetic><Icon name="phone" /> {SITE.phone}</a>
-      <a href="/carte/" class="btn btn--lg btn--ghost">Voir la carte <Icon name="arrow" /></a>
+    <div class="ctas">
+      <a href={telHref} class="btn btn-ember"><Icon name="phone" stroke={2} /> {SITE.phone}</a>
+      <a href="/carte/" class="btn btn-glass">Voir la carte <Icon name="arrow" /></a>
     </div>
   </PageHero>
 
-  <section class="section--tight on-light">
-    <div class="container">
-      <ul class="liv-kpis">
-        <li data-reveal>
-          <Icon name="bike" size={34} />
-          <strong>Gratuite</strong>
-          <span>dans un rayon de {SITE.delivery.radiusKm} km</span>
-        </li>
-        <li data-reveal data-delay="0.08">
-          <Icon name="bag" size={34} />
-          <strong>{SITE.delivery.minOrder} €</strong>
-          <span>minimum de commande</span>
-        </li>
-        <li data-reveal data-delay="0.16">
-          <Icon name="clock" size={34} />
-          <strong>7j/7</strong>
-          <span>midi et soir</span>
-        </li>
-        <li data-reveal data-delay="0.24">
-          <Icon name="card" size={34} />
-          <strong>CB · Espèces</strong>
-          <span>titres-restaurant acceptés</span>
-        </li>
+  <section class="sec--tight">
+    <div class="wrap">
+      <ul class="kpis">
+        <li class="rv"><span class="ic"><Icon name="scooter" /></span><b>Gratuite</b><span>dans un rayon de {SITE.delivery.radiusKm} km</span></li>
+        <li class="rv" style="--d:1"><span class="ic"><Icon name="euro" /></span><b>{SITE.delivery.minOrder} €</b><span>minimum de commande</span></li>
+        <li class="rv" style="--d:2"><span class="ic"><Icon name="clock" /></span><b>7j/7</b><span>midi et soir</span></li>
+        <li class="rv" style="--d:3"><span class="ic"><Icon name="card" /></span><b>CB · Espèces</b><span>titres-restaurant acceptés</span></li>
       </ul>
 
-      <div class="liv-zones">
-        <div class="liv-zones__text">
+      <div class="zones">
+        <div>
           <span class="eyebrow">Communes livrées</span>
-          <h2 class="h-2" data-split>Nous livrons <span class="serif">près de chez vous</span></h2>
-          <p class="muted" data-reveal>
-            Depuis notre pizzeria du {SITE.address.street}, nous livrons {city} et les villes voisines. Votre commune n'apparaît pas ?
-            Appelez-nous au <a href={telHref}>{SITE.phone}</a>, nous vous dirons si nous pouvons vous livrer.
+          <h2 class="h2">Nous livrons<em class="grad block">près de chez vous.</em></h2>
+          <p class="lead">
+            Depuis notre pizzeria du {SITE.address.street}, nous livrons {city} et les villes voisines. Votre commune n'apparaît pas&nbsp;?
+            Appelez-nous au <a href={telHref}>{SITE.phone}</a>.
           </p>
         </div>
-        <ul class="liv-towns">
+        <ul class="towns">
           {
             SITE.zones.map((z, i) => (
-              <li data-reveal data-delay={(i % 4) * 0.05}>
+              <li class:list={['rv', { me: i === 0 }]} style={`--d:${i % 4}`}>
                 <h3>Livraison pizza {z}</h3>
                 <p>{i === 0 ? 'Notre ville — livraison express' : `Livraison gratuite depuis ${city}`}</p>
               </li>
@@ -96,134 +81,115 @@ const deliverySchema = {
     </div>
   </section>
 
-  <section class="section">
-    <div class="container liv-bottom">
+  <section class="sec--tight">
+    <div class="wrap bottom">
+      <div class="rv"><HoursPanel /></div>
       <div>
-        <span class="eyebrow">Horaires de livraison</span>
-        <h2 class="h-2" data-split>Midi <span class="serif text-saffron">&</span> soir</h2>
-        <p class="muted liv-bottom__p" data-reveal>Commandez pendant nos heures d'ouverture, en livraison ou à emporter.</p>
-        <div data-reveal><Hours /></div>
-      </div>
-      <div>
-        <span class="eyebrow">Questions fréquentes</span>
-        <h2 class="h-2 liv-bottom__faq-title" data-split>Bon à savoir</h2>
-        <Faq items={faqs} dark />
+        <span class="eyebrow">Bon à savoir</span>
+        <h2 class="h2 bottom__t">Questions<em class="grad block">fréquentes.</em></h2>
+        <Faq items={faqs} />
       </div>
     </div>
   </section>
 </Base>
 
 <style>
-  .liv-ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .liv-kpis {
+  .kpis {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
-  .liv-kpis li {
+  .kpis li {
     display: grid;
     gap: 6px;
-    padding: 28px 24px;
-    border-radius: var(--radius-lg);
-    background: #fff;
-    box-shadow: 0 30px 60px -44px rgba(60, 20, 0, 0.45);
+    padding: 26px 24px;
+    border-radius: 24px;
+    border: 1px solid var(--line);
+    background: var(--card);
   }
-  .liv-kpis :global(svg) {
-    color: var(--tomato);
+  .kpis .ic {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: var(--ember-2);
+    background: rgba(255, 90, 31, 0.08);
+    border: 1px solid rgba(255, 130, 60, 0.2);
     margin-bottom: 10px;
   }
-  .liv-kpis strong {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
+  .kpis b {
+    font: 700 26px/1 var(--display);
     letter-spacing: -0.03em;
-    line-height: 1;
   }
-  .liv-kpis span {
-    color: var(--muted-on-light);
-    font-size: 0.93rem;
+  .kpis li > span:last-child {
+    color: var(--muted);
+    font-size: 14px;
   }
-  .liv-zones {
+  .zones {
     display: grid;
-    grid-template-columns: 1fr 1.4fr;
+    grid-template-columns: 1fr 1.3fr;
     gap: clamp(32px, 5vw, 80px);
     margin-top: clamp(64px, 8vw, 110px);
   }
-  .liv-zones__text {
-    display: grid;
-    gap: 18px;
-    align-content: start;
-  }
-  .liv-zones__text a {
-    color: var(--tomato-2);
+  .zones a {
+    color: var(--gold);
     font-weight: 700;
   }
-  .liv-towns {
+  .towns {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
-  .liv-towns li {
+  .towns li {
     padding: 18px 20px;
-    border-radius: var(--radius);
-    background: #fff;
-    border-left: 4px solid var(--tomato);
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: rgba(255, 240, 228, 0.025);
   }
-  .liv-towns li:first-child {
-    background: var(--ink);
-    color: var(--cream);
-    border-color: var(--saffron);
+  .towns li.me {
+    border-color: rgba(255, 140, 70, 0.45);
+    background: linear-gradient(135deg, rgba(255, 120, 50, 0.16), rgba(255, 90, 31, 0.03));
   }
-  .liv-towns h3 {
-    font-size: 1.1rem;
+  .towns h3 {
+    font: 700 16px/1.25 var(--display);
     letter-spacing: -0.02em;
-    line-height: 1.2;
   }
-  .liv-towns p {
-    font-size: 0.85rem;
-    color: var(--muted-on-light);
+  .towns p {
     margin-top: 4px;
+    font-size: 13px;
+    color: var(--muted);
   }
-  .liv-towns li:first-child p {
-    color: var(--muted-on-dark);
-  }
-  .liv-bottom {
+  .bottom {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
-    gap: clamp(40px, 6vw, 90px);
+    gap: clamp(32px, 5vw, 80px);
     align-items: start;
   }
-  .liv-bottom > div {
-    display: grid;
-    gap: 18px;
-  }
-  .liv-bottom__faq-title {
-    margin-bottom: 8px;
+  .bottom__t {
+    margin-bottom: 28px;
   }
   @media (max-width: 1000px) {
-    .liv-kpis {
+    .kpis {
       grid-template-columns: repeat(2, 1fr);
     }
-    .liv-zones,
-    .liv-bottom {
+    .zones,
+    .bottom {
       grid-template-columns: 1fr;
     }
   }
   @media (max-width: 480px) {
-    .liv-towns {
+    .towns {
       grid-template-columns: 1fr;
     }
-    .liv-kpis {
+    .kpis {
       gap: 10px;
     }
-    .liv-kpis li {
-      padding: 20px 16px;
+    .kpis li {
+      padding: 18px 16px;
     }
-    .liv-kpis strong {
-      font-size: 1.35rem;
+    .kpis b {
+      font-size: 20px;
     }
   }
 </style>
